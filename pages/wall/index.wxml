@@ -1,0 +1,51 @@
+<t-navbar title="时光墙"></t-navbar>
+
+<view class="wall-page">
+  <view wx:if="{{loading}}" class="status-card">
+    <view class="status-card__title">正在翻看回忆</view>
+    <view class="status-card__desc">把你们一起留下的照片和故事慢慢排好。</view>
+  </view>
+
+  <view wx:elif="{{errorMessage}}" class="status-card status-card--error">
+    <view class="status-card__title">加载失败</view>
+    <view class="status-card__desc">{{errorMessage}}</view>
+  </view>
+
+  <view wx:elif="{{moments.length}}" class="wall-list">
+    <view wx:for="{{moments}}" wx:key="id" class="wall-entry" data-id="{{item.id}}" bindtap="goMomentDetail">
+      <view class="wall-entry__gallery" wx:if="{{item.previewImages.length}}">
+        <image
+          wx:for="{{item.previewImages}}"
+          wx:key="*this"
+          class="wall-entry__thumb"
+          src="{{item}}"
+          mode="aspectFill"
+          data-images="{{item.previewImages}}"
+          data-current="{{item}}"
+          catchtap="previewMomentImages"
+        />
+      </view>
+      <view wx:else class="wall-entry__cover-wrap">
+        <image class="wall-entry__cover" src="{{item.cover}}" mode="aspectFill" />
+      </view>
+
+      <view class="wall-entry__body">
+        <view class="wall-entry__meta">
+          <text class="wall-entry__date">{{item.date}}</text>
+          <text class="wall-entry__mood">{{item.mood}}</text>
+        </view>
+        <view class="wall-entry__title">{{item.title}}</view>
+        <view class="wall-entry__text">{{item.content}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:else class="empty-state">
+    <view class="empty-state__title">时光墙还是空的</view>
+    <view class="empty-state__desc">先记录一张照片或一句话，让这里开始有故事。</view>
+  </view>
+</view>
+
+<view class="wall-action">
+  <t-button theme="primary" size="large" shape="round" icon="add" bindtap="goRelease">记录今天</t-button>
+</view>

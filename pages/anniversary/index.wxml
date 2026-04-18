@@ -1,0 +1,51 @@
+<t-navbar title="纪念日"></t-navbar>
+
+<view class="anniversary-page">
+  <view wx:if="{{loading}}" class="status-card">
+    <view class="status-card__title">正在整理重要日期</view>
+    <view class="status-card__desc">把和你们有关的每个纪念节点都轻轻摆好。</view>
+  </view>
+
+  <view wx:elif="{{errorMessage}}" class="status-card status-card--error">
+    <view class="status-card__title">加载失败</view>
+    <view class="status-card__desc">{{errorMessage}}</view>
+  </view>
+
+  <block wx:else>
+    <view class="overview-card">
+      <view class="overview-card__label">重要日期</view>
+      <view class="overview-card__value">{{relationshipDays}} 天</view>
+      <view class="overview-card__desc">{{startDateLabel}}</view>
+      <picker mode="date" value="{{startDatePickerValue}}" bindchange="handleStartDateChange">
+        <view class="ghost-button">{{startDateActionLabel}}</view>
+      </picker>
+    </view>
+
+    <view class="panel">
+      <view class="panel__title">纪念日</view>
+      <input
+        class="field-input"
+        value="{{anniversaryName}}"
+        placeholder="例如：第一次见面"
+        maxlength="20"
+        bindinput="handleAnniversaryNameInput"
+      />
+      <picker mode="date" value="{{anniversaryDate}}" bindchange="handleAnniversaryDateChange">
+        <view class="picker-input">{{anniversaryDate}}</view>
+      </picker>
+      <t-button theme="primary" size="large" bindtap="addAnniversary">新增纪念日</t-button>
+
+      <view wx:if="{{anniversaries.length}}" class="list-block">
+        <view wx:for="{{anniversaries}}" wx:key="id" class="list-item">
+          <view>
+            <view class="list-item__title">{{item.name}}</view>
+            <view class="list-item__desc">{{item.date}} · {{item.diffLabel}}</view>
+          </view>
+          <text class="list-item__action" data-id="{{item.id}}" bindtap="removeAnniversary">删除</text>
+        </view>
+      </view>
+
+      <view wx:else class="empty-text">还没有纪念日，先添加一个重要日子。</view>
+    </view>
+  </block>
+</view>

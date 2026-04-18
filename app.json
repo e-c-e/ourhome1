@@ -1,5 +1,14 @@
 {
-  "pages": ["pages/auth/index", "pages/home/index", "pages/message/index", "pages/my/index"],
+  "pages": [
+    "pages/auth/index",
+    "pages/home/index",
+    "pages/wall/index",
+    "pages/anniversary/index",
+    "pages/pet/index",
+    "pages/wishes/index",
+    "pages/my/index",
+    "pages/message/index"
+  ],
   "usingComponents": {
     "t-toast": "tdesign-miniprogram/toast/toast"
   },
@@ -29,12 +38,20 @@
         "text": "首页"
       },
       {
-        "pagePath": "pages/message/index",
-        "text": "纪念"
+        "pagePath": "pages/wall/index",
+        "text": "时光墙"
       },
       {
-        "pagePath": "pages/my/index",
-        "text": "我们"
+        "pagePath": "pages/anniversary/index",
+        "text": "纪念日"
+      },
+      {
+        "pagePath": "pages/pet/index",
+        "text": "宠物岛"
+      },
+      {
+        "pagePath": "pages/wishes/index",
+        "text": "心愿单"
       }
     ]
   },

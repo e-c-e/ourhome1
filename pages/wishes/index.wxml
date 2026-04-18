@@ -1,0 +1,45 @@
+<t-navbar title="心愿单"></t-navbar>
+
+<view class="wish-page">
+  <view wx:if="{{loading}}" class="status-card">
+    <view class="status-card__title">正在整理心愿</view>
+    <view class="status-card__desc">把想一起完成的小事和大事慢慢排出来。</view>
+  </view>
+
+  <view wx:elif="{{errorMessage}}" class="status-card status-card--error">
+    <view class="status-card__title">加载失败</view>
+    <view class="status-card__desc">{{errorMessage}}</view>
+  </view>
+
+  <block wx:else>
+    <view class="panel">
+      <view class="panel__title">新增心愿</view>
+      <input
+        class="field-input"
+        value="{{wishText}}"
+        placeholder="例如：一起去看海"
+        maxlength="40"
+        bindinput="handleWishInput"
+      />
+      <t-button theme="primary" size="large" bindtap="addWish">新增心愿</t-button>
+    </view>
+
+    <view class="panel">
+      <view class="panel__title">心愿列表</view>
+      <view wx:if="{{wishes.length}}" class="list-block">
+        <view wx:for="{{wishes}}" wx:key="id" class="list-item">
+          <view class="wish-meta" data-id="{{item.id}}" bindtap="toggleWish">
+            <view class="wish-dot {{item.isCompleted ? 'wish-dot--done' : ''}}"></view>
+            <view>
+              <view class="list-item__title {{item.isCompleted ? 'is-done' : ''}}">{{item.content}}</view>
+              <view class="list-item__desc">{{item.completedLabel}}</view>
+            </view>
+          </view>
+          <text class="list-item__action" data-id="{{item.id}}" bindtap="removeWish">删除</text>
+        </view>
+      </view>
+
+      <view wx:else class="empty-text">把想一起做的事慢慢记下来。</view>
+    </view>
+  </block>
+</view>

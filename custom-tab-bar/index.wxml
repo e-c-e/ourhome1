@@ -1,5 +1,7 @@
 <t-tab-bar value="{{ value }}" theme="tag" split="{{ false }}" bind:change="handleChange">
   <t-tab-bar-item icon="home" value="home">首页</t-tab-bar-item>
-  <t-tab-bar-item icon="calendar" value="message">纪念</t-tab-bar-item>
-  <t-tab-bar-item icon="user" value="my">我们</t-tab-bar-item>
+  <t-tab-bar-item icon="app" value="wall">时光墙</t-tab-bar-item>
+  <t-tab-bar-item icon="calendar" value="anniversary">纪念日</t-tab-bar-item>
+  <t-tab-bar-item icon="chat" value="pet">宠物岛</t-tab-bar-item>
+  <t-tab-bar-item icon="star" value="wishes">心愿单</t-tab-bar-item>
 </t-tab-bar>
