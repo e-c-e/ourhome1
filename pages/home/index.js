@@ -1,82 +1,156 @@
-import Message from 'tdesign-miniprogram/message/index';
-import request from '~/api/request';
+import { fetchHomeData, updateRelationshipStartDate } from '../../api/relationship';
+import { STORAGE_KEYS, formatDate, getDaysBetween } from '../../utils/couple';
+import { ensureAuthorizedPage } from '../../utils/pageAuth';
 
-// 获取应用实例
-// const app = getApp()
+const DEFAULT_COVER = '/static/home/card0.png';
 
 Page({
   data: {
-    enable: false,
-    swiperList: [],
-    cardInfo: [],
-    // 发布
-    motto: 'Hello World',
-    userInfo: {},
-    hasUserInfo: false,
-    canIUse: wx.canIUse('button.open-type.getUserInfo'),
-    canIUseGetUserProfile: false,
-    canIUseOpenData: wx.canIUse('open-data.type.userAvatarUrl') && wx.canIUse('open-data.type.userNickName'), // 如需尝试获取用户信息可改为false
+    today: formatDate(new Date()),
+    relationshipStartDate: '',
+    relationshipDateLabel: '还没有设置在一起日期',
+    pickerDateValue: formatDate(new Date()),
+    relationshipActionLabel: '设置在一起日期',
+    relationshipDays: 0,
+    momentCount: 0,
+    latestMood: '未记录',
+    latestText: '还没有新的回忆',
+    latestDate: '',
+    moments: [],
+    recentMoments: [],
+    petIslandHint: '宠物岛功能暂未开启，先把今天的回忆好好存起来。',
+    loading: true,
+    errorMessage: '',
   },
-  // 生命周期
-  async onReady() {
-    const [cardRes, swiperRes] = await Promise.all([
-      request('/home/cards').then((res) => res.data),
-      request('/home/swipers').then((res) => res.data),
-    ]);
 
-    this.setData({
-      cardInfo: cardRes.data,
-      focusCardInfo: cardRes.data.slice(0, 3),
-      swiperList: swiperRes.data,
-    });
+  async onShow() {
+    const authResult = await ensureAuthorizedPage();
+    if (!authResult) return;
+
+    await this.loadHomeData();
+    this.showPendingNotice();
   },
-  onLoad(option) {
-    if (wx.getUserProfile) {
+
+  async loadHomeData() {
+    this.setData({ loading: true, errorMessage: '' });
+
+    try {
+      const { moments = [], space = {} } = await fetchHomeData();
+      const startDate = space.startDate || '';
+      const today = formatDate(new Date());
+      const sortedMoments = [...moments].sort((left, right) => (right.createdAt || 0) - (left.createdAt || 0));
+
+      const recentMoments = sortedMoments.slice(0, 3).map((item) => ({
+        id: item._id,
+        cover: item.cover || DEFAULT_COVER,
+        title: item.title || '今天的记录',
+        content: item.content || '写下了一段新的回忆。',
+        images: item.images || [],
+        date: item.date || this.data.today,
+        mood: item.mood || '日常',
+        previewImages: (item.images || []).slice(0, 3),
+      }));
+
+      const latestMoment = sortedMoments[0];
+      const petIslandHint = sortedMoments.length
+        ? '你们今天已经留下新的回忆啦，宠物岛的亲密度也在偷偷变好。'
+        : '先记录第一条回忆，之后再慢慢扩展更多互动。';
+
       this.setData({
-        canIUseGetUserProfile: true,
+        relationshipStartDate: startDate,
+        relationshipDateLabel: startDate ? `在一起：${startDate}` : '还没有设置在一起日期',
+        pickerDateValue: startDate || today,
+        relationshipActionLabel: startDate ? '修改日期' : '设置日期',
+        relationshipDays: startDate ? getDaysBetween(startDate, today) : 0,
+        momentCount: sortedMoments.length,
+        latestMood: latestMoment ? latestMoment.mood || '日常' : '未记录',
+        latestText: latestMoment ? latestMoment.content.slice(0, 24) : '还没有新的回忆',
+        latestDate: latestMoment ? latestMoment.date : '',
+        moments: sortedMoments,
+        recentMoments,
+        petIslandHint,
+        loading: false,
+      });
+    } catch (error) {
+      this.setData({
+        loading: false,
+        errorMessage: error.message || '回忆加载失败，请稍后再试。',
       });
     }
-    if (option.oper) {
-      let content = '';
-      if (option.oper === 'release') {
-        content = '发布成功';
-      } else if (option.oper === 'save') {
-        content = '保存成功';
-      }
-      this.showOperMsg(content);
-    }
   },
-  onRefresh() {
-    this.refresh();
-  },
-  async refresh() {
-    this.setData({
-      enable: true,
-    });
-    const [cardRes, swiperRes] = await Promise.all([
-      request('/home/cards').then((res) => res.data),
-      request('/home/swipers').then((res) => res.data),
-    ]);
 
-    setTimeout(() => {
-      this.setData({
-        enable: false,
-        cardInfo: cardRes.data,
-        swiperList: swiperRes.data,
-      });
-    }, 1500);
-  },
-  showOperMsg(content) {
-    Message.success({
-      context: this,
-      offset: [120, 32],
-      duration: 4000,
-      content,
+  showPendingNotice() {
+    const notice = wx.getStorageSync(STORAGE_KEYS.NOTICE);
+    if (!notice) return;
+
+    wx.removeStorageSync(STORAGE_KEYS.NOTICE);
+    wx.showToast({
+      title: notice,
+      icon: 'success',
     });
   },
+
   goRelease() {
     wx.navigateTo({
       url: '/pages/release/index',
+    });
+  },
+
+  goMomentDetail(e) {
+    const { id } = e.currentTarget.dataset;
+    if (!id) return;
+
+    wx.navigateTo({
+      url: `/pages/moment/detail?id=${id}`,
+    });
+  },
+
+  async handleStartDateChange(e) {
+    const startDate = e.detail.value;
+
+    try {
+      const result = await updateRelationshipStartDate(startDate);
+      const savedStartDate = result.startDate || startDate;
+      const today = formatDate(new Date());
+
+      this.setData({
+        relationshipStartDate: savedStartDate,
+        relationshipDateLabel: `在一起：${savedStartDate}`,
+        pickerDateValue: savedStartDate,
+        relationshipActionLabel: '修改日期',
+        relationshipDays: getDaysBetween(savedStartDate, today),
+      });
+
+      wx.showToast({
+        title: '在一起日期已保存',
+        icon: 'success',
+      });
+    } catch (error) {
+      wx.showToast({
+        title: error.message || '保存失败，请稍后重试',
+        icon: 'none',
+      });
+      await this.loadHomeData();
+    }
+  },
+
+  previewMoment(e) {
+    const { images } = e.currentTarget.dataset;
+    if (!images || !images.length) return;
+
+    wx.previewImage({
+      current: images[0],
+      urls: images,
+    });
+  },
+
+  previewMomentImages(e) {
+    const { images, current } = e.currentTarget.dataset;
+    if (!images || !images.length) return;
+
+    wx.previewImage({
+      current: current || images[0],
+      urls: images,
     });
   },
 });

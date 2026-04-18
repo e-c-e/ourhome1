@@ -1,87 +1,82 @@
-import request from '~/api/request';
-import useToastBehavior from '~/behaviors/useToast';
+import { clearCloudData, fetchSpaceData, saveSpaceProfile } from '../../api/relationship';
+import { ensureAuthorizedPage } from '../../utils/pageAuth';
+import { STORAGE_KEYS } from '../../utils/couple';
 
 Page({
-  behaviors: [useToastBehavior],
-
   data: {
-    isLoad: false,
-    service: [],
-    personalInfo: {},
-    gridList: [
-      {
-        name: '全部发布',
-        icon: 'root-list',
-        type: 'all',
-        url: '',
-      },
-      {
-        name: '审核中',
-        icon: 'search',
-        type: 'progress',
-        url: '',
-      },
-      {
-        name: '已发布',
-        icon: 'upload',
-        type: 'published',
-        url: '',
-      },
-      {
-        name: '草稿箱',
-        icon: 'file-copy',
-        type: 'draft',
-        url: '',
-      },
-    ],
-
-    settingList: [
-      { name: '联系客服', icon: 'service', type: 'service' },
-      { name: '设置', icon: 'setting', type: 'setting', url: '/pages/setting/index' },
-    ],
-  },
-
-  onLoad() {
-    this.getServiceList();
+    profile: {
+      spaceName: '我们的空间',
+      partnerA: '我',
+      partnerB: '你',
+      intro: '把普通日子慢慢写成回忆。',
+    },
+    stats: {
+      momentCount: 0,
+      anniversaryCount: 0,
+      wishCount: 0,
+      completedWishCount: 0,
+    },
+    loading: true,
+    errorMessage: '',
   },
 
   async onShow() {
-    const Token = wx.getStorageSync('access_token');
-    const personalInfo = await this.getPersonalInfo();
+    const authResult = await ensureAuthorizedPage();
+    if (!authResult) return;
+    await this.loadPageData();
+  },
 
-    if (Token) {
+  async loadPageData() {
+    this.setData({ loading: true, errorMessage: '' });
+    try {
+      const { profile, stats } = await fetchSpaceData();
+
       this.setData({
-        isLoad: true,
-        personalInfo,
+        profile,
+        stats,
+        loading: false,
+      });
+    } catch (error) {
+      this.setData({
+        loading: false,
+        errorMessage: error.message || '空间数据加载失败，请稍后重试。',
       });
     }
   },
 
-  getServiceList() {
-    request('/api/getServiceList').then((res) => {
-      const { service } = res.data.data;
-      this.setData({ service });
+  handleInput(e) {
+    const { field } = e.currentTarget.dataset;
+    const { value } = e.detail;
+    this.setData({
+      [`profile.${field}`]: value,
     });
   },
 
-  async getPersonalInfo() {
-    const info = await request('/api/genPersonalInfo').then((res) => res.data.data);
-    return info;
-  },
-
-  onLogin(e) {
-    wx.navigateTo({
-      url: '/pages/login/login',
+  async saveProfile() {
+    await saveSpaceProfile(this.data.profile);
+    wx.showToast({
+      title: '空间信息已保存',
+      icon: 'success',
     });
   },
 
-  onNavigateTo() {
-    wx.navigateTo({ url: `/pages/my/info-edit/index` });
-  },
+  clearAllData() {
+    wx.showModal({
+      title: '确认清空',
+      content: '会清空回忆、纪念日、心愿和空间信息。',
+      success: async ({ confirm }) => {
+        if (!confirm) return;
 
-  onEleClick(e) {
-    const { name, url } = e.currentTarget.dataset.data;
-    if (url) return;
-    this.onShowToast('#t-toast', name);
+        await clearCloudData();
+        wx.removeStorageSync(STORAGE_KEYS.DRAFT);
+        wx.removeStorageSync(STORAGE_KEYS.NOTICE);
+
+        await this.loadPageData();
+        wx.showToast({
+          title: '已清空',
+          icon: 'success',
+        });
+      },
+    });
   },
 });

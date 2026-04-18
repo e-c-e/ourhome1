@@ -1,15 +1,10 @@
-// app.js
-import config from './config';
-import Mock from './mock/index';
-import createBus from './utils/eventBus';
-import { connectSocket, fetchUnreadNum } from './mock/chat';
-
-if (config.isMock) {
-  Mock();
-}
+import { loginToSpace } from './api/relationship';
+import { initCloud } from './utils/cloud';
 
 App({
   onLaunch() {
+    this.bootstrapPromise = this.bootstrap();
+
     const updateManager = wx.getUpdateManager();
 
     updateManager.onCheckForUpdate((res) => {
@@ -27,40 +22,50 @@ App({
         },
       });
     });
-
-    this.getUnreadNum();
-    this.connect();
   },
   globalData: {
     userInfo: null,
-    unreadNum: 0, // 未读消息数量
-    socket: null, // SocketTask 对象
+    isAuthorized: false,
+    authStatus: 'loading',
+    authMessage: '',
+    cloudReady: false,
   },
 
-  /** 全局事件总线 */
-  eventBus: createBus(),
+  async bootstrap(force = false) {
+    if (this.bootstrapPromise && !force) {
+      return this.bootstrapPromise;
+    }
 
-  /** 初始化WebSocket */
-  connect() {
-    const socket = connectSocket();
-    socket.onMessage((data) => {
-      data = JSON.parse(data);
-      if (data.type === 'message' && !data.data.message.read) this.setUnreadNum(this.globalData.unreadNum + 1);
-    });
-    this.globalData.socket = socket;
+    this.globalData.authStatus = 'loading';
+
+    this.bootstrapPromise = (async () => {
+      try {
+        await initCloud();
+        this.globalData.cloudReady = true;
+
+        const authResult = await loginToSpace();
+        this.globalData.userInfo = authResult.user || null;
+        this.globalData.isAuthorized = !!authResult.authorized;
+        this.globalData.authStatus = authResult.authorized ? 'ready' : 'denied';
+        this.globalData.authMessage = authResult.message || '';
+        return authResult;
+      } catch (error) {
+        this.globalData.isAuthorized = false;
+        this.globalData.authStatus = 'error';
+        this.globalData.authMessage = error.message || '云开发初始化失败';
+        throw error;
+      }
+    })();
+
+    return this.bootstrapPromise;
   },
 
-  /** 获取未读消息数量 */
-  getUnreadNum() {
-    fetchUnreadNum().then(({ data }) => {
-      this.globalData.unreadNum = data;
-      this.eventBus.emit('unread-num-change', data);
-    });
+  ensureAuthorized() {
+    return this.bootstrap();
   },
 
-  /** 设置未读消息数量 */
-  setUnreadNum(unreadNum) {
-    this.globalData.unreadNum = unreadNum;
-    this.eventBus.emit('unread-num-change', unreadNum);
+  refreshAuth() {
+    this.bootstrapPromise = null;
+    return this.bootstrap(true);
   },
 });

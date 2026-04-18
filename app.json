@@ -1,54 +1,24 @@
 {
-  "pages": ["pages/home/index", "pages/message/index", "pages/my/index"],
+  "pages": ["pages/auth/index", "pages/home/index", "pages/message/index", "pages/my/index"],
   "usingComponents": {
     "t-toast": "tdesign-miniprogram/toast/toast"
   },
   "subpackages": [
     {
-      "root": "pages/search",
-      "name": "search",
-      "pages": ["index"]
-    },
-    {
-      "root": "pages/my/info-edit",
-      "name": "edit",
-      "pages": ["index"]
-    },
-    {
-      "root": "pages/chat",
-      "name": "chat",
-      "pages": ["index"]
-    },
-    {
-      "root": "pages/login",
-      "name": "login",
-      "pages": ["login"]
-    },
-    {
-      "root": "pages/loginCode",
-      "name": "loginCode",
-      "pages": ["loginCode"]
-    },
-    {
-      "root": "pages/dataCenter",
-      "name": "dataCenter",
-      "pages": ["index"]
-    },
-    {
-      "root": "pages/setting",
-      "name": "setting",
-      "pages": ["index"]
-    },
-    {
       "root": "pages/release",
       "name": "release",
       "pages": ["index"]
+    },
+    {
+      "root": "pages/moment",
+      "name": "moment",
+      "pages": ["detail"]
     }
   ],
   "window": {
     "backgroundTextStyle": "light",
     "navigationBarBackgroundColor": "#fff",
-    "navigationBarTitleText": "Weixin",
+    "navigationBarTitleText": "我们的空间",
     "navigationBarTextStyle": "black"
   },
   "tabBar": {
@@ -60,16 +30,17 @@
       },
       {
         "pagePath": "pages/message/index",
-        "text": "消息"
+        "text": "纪念"
       },
       {
         "pagePath": "pages/my/index",
-        "text": "我的"
+        "text": "我们"
       }
     ]
   },
   "resolveAlias": {
     "~/*": "/*"
   },
+  "cloud": true,
   "sitemapLocation": "sitemap.json"
 }

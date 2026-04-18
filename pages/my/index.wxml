@@ -1,75 +1,51 @@
-<t-toast id="t-toast" />
+<t-navbar title="我们的空间"></t-navbar>
 
-<view class="my">
-  <image class="nav-bg" src="/static/bg_navbar.png" />
-  <nav title-text="我的" />
-  <view class="my-info">
-    <t-cell-group>
-      <t-cell wx:if="{{isLoad}}" bordered="{{false}}">
-        <t-avatar image="{{personalInfo.image}}" slot="left-icon" size="large" />
-        <view class="my-info__person" slot="description">
-          <view class="name">{{personalInfo.name}}</view>
-          <view class="tags">
-            <t-tag class="tag" variant="light" icon="discount">{{personalInfo.star}}</t-tag>
-            <t-tag class="tag" variant="light" icon="location">{{personalInfo.city}}</t-tag>
-          </view>
-        </view>
-        <t-icon slot="right-icon" name="edit" size="40rpx" color="#000000e6" bindtap="onNavigateTo" />
-      </t-cell>
-      <t-cell
-        wx:if="{{!isLoad}}"
-        title="请先登录/注册"
-        bordered="{{false}}"
-        t-class-title="cell-class-title"
-        t-class-center="cell-class-center"
-        bindtap="onLogin"
-      >
-        <t-avatar slot="left-icon" icon="user" size="128rpx" />
-      </t-cell>
-    </t-cell-group>
-    <t-divider t-class="divider-class" />
-    <t-grid t-class="grid-class">
-      <t-grid-item
-        wx:for="{{gridList}}"
-        wx:for-item="gridItem"
-        wx:key="type"
-        text="{{gridItem.name}}"
-        icon="{{gridItem.icon}}"
-        class="grid-item {{gridItem.type === 'all' ? 'split-line' : ''}}"
-        data-data="{{gridItem}}"
-        bindclick="onEleClick"
-      />
-    </t-grid>
+<view class="space-page">
+  <view wx:if="{{loading}}" class="status-card">
+    <view class="status-card__title">正在装饰你们的空间</view>
+    <view class="status-card__desc">把名字、介绍和统计慢慢摆放好。</view>
   </view>
 
-  <view class="my-service">
-    <view class="my-service--tips">推荐服务</view>
-    <t-grid column="{{4}}" class="my-service__list">
-      <t-grid-item
-        class="my-service__list-item"
-        wx:for="{{service}}"
-        wx:key="item"
-        text="{{item.name}}"
-        image="{{item.image}}"
-        url="{{item.url}}"
-        data-data="{{item}}"
-        bindclick="onEleClick"
-      />
-    </t-grid>
+  <view wx:elif="{{errorMessage}}" class="status-card status-card--error">
+    <view class="status-card__title">加载失败</view>
+    <view class="status-card__desc">{{errorMessage}}</view>
   </view>
 
-  <t-cell-group theme="card">
-    <t-cell
-      wx:for="{{settingList}}"
-      wx:for-item="item"
-      wx:key="type"
-      title="{{item.name}}"
-      url="{{item.url}}"
-      leftIcon="{{item.icon}}"
-      hover
-      arrow
-      data-data="{{item}}"
-      bindclick="onEleClick"
-    />
-  </t-cell-group>
+  <block wx:else>
+  <view class="hero-card">
+    <view class="hero-card__title">{{profile.spaceName}}</view>
+    <view class="hero-card__desc">{{profile.intro}}</view>
+    <view class="hero-card__pair">{{profile.partnerA}} × {{profile.partnerB}}</view>
+  </view>
+
+  <view class="stats-grid">
+    <view class="stats-item">
+      <text class="stats-item__value">{{stats.momentCount}}</text>
+      <text class="stats-item__label">回忆</text>
+    </view>
+    <view class="stats-item">
+      <text class="stats-item__value">{{stats.anniversaryCount}}</text>
+      <text class="stats-item__label">纪念日</text>
+    </view>
+    <view class="stats-item">
+      <text class="stats-item__value">{{stats.completedWishCount}} / {{stats.wishCount}}</text>
+      <text class="stats-item__label">心愿</text>
+    </view>
+  </view>
+
+  <view class="panel">
+    <view class="panel__title">空间设置</view>
+    <input class="field-input" value="{{profile.spaceName}}" data-field="spaceName" maxlength="20" placeholder="空间名字" bindinput="handleInput" />
+    <input class="field-input" value="{{profile.partnerA}}" data-field="partnerA" maxlength="10" placeholder="你的名字" bindinput="handleInput" />
+    <input class="field-input" value="{{profile.partnerB}}" data-field="partnerB" maxlength="10" placeholder="对方名字" bindinput="handleInput" />
+    <textarea class="field-textarea" value="{{profile.intro}}" data-field="intro" maxlength="80" placeholder="写一句只属于你们的介绍" bindinput="handleInput" />
+    <t-button theme="primary" size="large" bindtap="saveProfile">保存空间信息</t-button>
+  </view>
+
+  <view class="panel panel--danger">
+    <view class="panel__title">数据管理</view>
+    <view class="panel__desc">当前版本已经接入云开发数据库，清空后会同步删除云端回忆、纪念日、心愿和上传图片。</view>
+    <t-button theme="danger" variant="outline" size="large" bindtap="clearAllData">清空云端数据</t-button>
+  </view>
+  </block>
 </view>

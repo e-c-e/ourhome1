@@ -1,48 +1,103 @@
-<nav nav-type="search" />
-<view class="home-container">
-  <view class="home-content">
-    <t-tabs defaultValue="recommend">
-      <t-tab-panel label="推荐" value="recommend">
-        <t-pull-down-refresh
-          value="{{enable}}"
-          bind:refresh="onRefresh"
-          loadingTexts="{{['下拉刷新', '松手刷新', '正在刷新', '刷新完成']}}"
-        >
-          <view class="home-card-list">
-            <t-swiper
-              list="{{swiperList}}"
-              navigation="{{ { type: 'dots-bar' } }}"
-              height="488rpx"
-              style="width: 340rpx"
-            />
-            <card
-              wx:for="{{cardInfo}}"
-              wx:key="index"
-              desc="{{item.desc}}"
-              url="{{item.url}}"
-              tags="{{item.tags}}"
+<t-navbar title="我们的空间" />
+
+<view class="home-page">
+  <view class="hero-card">
+    <view class="hero-card__eyebrow">我们的空间</view>
+    <view class="hero-card__title">把日常慢慢写成回忆</view>
+    <view class="hero-card__desc">
+      记录每一次见面、每一段话、每一张照片，让属于你们的日子有迹可循。
+    </view>
+
+    <view class="hero-stats">
+      <view class="stat-box">
+        <text class="stat-box__value">{{relationshipDays}}</text>
+        <text class="stat-box__label">在一起天数</text>
+      </view>
+      <view class="stat-box">
+        <text class="stat-box__value">{{momentCount}}</text>
+        <text class="stat-box__label">回忆条数</text>
+      </view>
+      <view class="stat-box">
+        <text class="stat-box__value">{{latestMood}}</text>
+        <text class="stat-box__label">最近心情</text>
+      </view>
+    </view>
+
+    <view class="hero-actions">
+      <t-button theme="primary" size="large" icon="add" bindtap="goRelease">记录今天</t-button>
+      <picker mode="date" value="{{pickerDateValue}}" bindchange="handleStartDateChange">
+        <view class="date-picker">
+          📅 {{relationshipActionLabel}}
+        </view>
+      </picker>
+    </view>
+    <view class="hero-card__date">{{relationshipDateLabel}}</view>
+  </view>
+
+  <view wx:if="{{loading}}" class="empty-state empty-state--soft">
+    <text class="empty-state__title">正在整理回忆...</text>
+    <text class="empty-state__desc">等一下，就把属于你们的内容放出来。</text>
+  </view>
+
+  <view wx:elif="{{errorMessage}}" class="empty-state empty-state--soft">
+    <text class="empty-state__title">加载失败</text>
+    <text class="empty-state__desc">{{errorMessage}}</text>
+  </view>
+
+  <block wx:elif="{{recentMoments.length}}">
+    <view class="section-panel">
+      <view class="section-head">
+        <text class="section-head__title">最近回忆</text>
+        <text class="section-head__sub">{{recentMoments.length}} 条</text>
+      </view>
+
+      <view class="memory-feed">
+        <view wx:for="{{recentMoments}}" wx:key="id" class="memory-entry" data-id="{{item.id}}" bindtap="goMomentDetail">
+          <view class="memory-entry__gallery" wx:if="{{item.previewImages.length}}">
+            <image
+              wx:for="{{item.previewImages}}"
+              wx:key="*this"
+              class="memory-entry__thumb"
+              src="{{item}}"
+              mode="aspectFill"
+              data-images="{{item.previewImages}}"
+              data-current="{{item}}"
+              catchtap="previewMomentImages"
             />
           </view>
-        </t-pull-down-refresh>
-      </t-tab-panel>
-      <t-tab-panel label="我的关注" value="follow">
-        <view class="home-card-list">
-          <card
-            wx:for="{{focusCardInfo}}"
-            wx:key="index"
-            desc="{{item.desc}}"
-            url="{{item.url}}"
-            tags="{{item.tags}}"
-          />
+          <view wx:else class="memory-entry__cover-wrap">
+            <image class="memory-entry__cover" src="{{item.cover}}" mode="aspectFill" />
+          </view>
+
+          <view class="memory-entry__body">
+            <view class="memory-entry__row">
+              <text class="memory-entry__date">{{item.date}}</text>
+              <text class="memory-entry__mood">{{item.mood}}</text>
+            </view>
+            <view class="memory-entry__title">{{item.title}}</view>
+            <view class="memory-entry__text">{{item.content}}</view>
+          </view>
         </view>
-      </t-tab-panel>
-    </t-tabs>
+      </view>
+    </view>
+
+    <view class="section-panel section-panel--pet">
+      <view class="section-head section-head--single">
+        <text class="section-head__title">宠物岛动态</text>
+      </view>
+      <view class="pet-tip">{{petIslandHint}}</view>
+    </view>
+  </block>
+
+  <view wx:else class="empty-state">
+    <image class="empty-state__image" src="/static/home/swiper0.png" mode="aspectFill" />
+    <text class="empty-state__title">还没有记录</text>
+    <text class="empty-state__desc">点下方按钮，写下第一条属于你们的回忆。</text>
   </view>
 </view>
 
 <view class="home-release">
-  <t-button theme="primary" size="large" icon="add" shape="round" bindtap="goRelease">
-    发布
+  <t-button theme="primary" size="large" shape="round" icon="add" bindtap="goRelease">
+    记录今天
   </t-button>
 </view>
-<t-message id="t-message" />

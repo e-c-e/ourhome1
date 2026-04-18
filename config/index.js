@@ -1,6 +1,8 @@
-/** 是否使用mock代替api返回 */
-export const config = {
-  useMock: true,
+const config = {
+  useMock: false,
+  cloudEnvId: 'DYNAMIC_CURRENT_ENV',
 };
 
-export default { config };
+export { config };
+
+export default config;

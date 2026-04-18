@@ -1,0 +1,47 @@
+<t-navbar title="回忆详情" left-arrow bind:left-click="goBack"></t-navbar>
+
+<view class="moment-page">
+  <view wx:if="{{loading}}" class="status-card">
+    <view class="status-card__title">正在翻看这条回忆</view>
+    <view class="status-card__desc">一点点把照片、文字和情绪拿出来。</view>
+  </view>
+
+  <view wx:elif="{{errorMessage}}" class="status-card status-card--error">
+    <view class="status-card__title">加载失败</view>
+    <view class="status-card__desc">{{errorMessage}}</view>
+  </view>
+
+  <block wx:else>
+    <view class="hero-card">
+      <view class="hero-card__eyebrow">{{moment.date}}</view>
+      <view class="hero-card__title">{{moment.title}}</view>
+      <view class="hero-card__meta">
+        <view class="meta-chip">{{moment.mood}}</view>
+        <view class="meta-chip meta-chip--light">{{moment.creatorLabel}}留下的回忆</view>
+      </view>
+      <view class="hero-card__desc">{{moment.content}}</view>
+    </view>
+
+    <view wx:if="{{moment.images.length}}" class="gallery-grid">
+      <image
+        wx:for="{{moment.images}}"
+        wx:key="*this"
+        class="gallery-grid__item"
+        src="{{item}}"
+        mode="aspectFill"
+        data-current="{{item}}"
+        bindtap="previewImage"
+      />
+    </view>
+
+    <view wx:if="{{!moment.images.length}}" class="empty-card">
+      <view class="empty-card__title">这一天没有上传照片</view>
+      <view class="empty-card__desc">只有文字也没关系，回忆本来就不一定要很满。</view>
+    </view>
+
+    <view class="detail-actions">
+      <t-button theme="light" size="large" bindtap="goBack">回到首页</t-button>
+      <t-button wx:if="{{moment.canDelete}}" theme="danger" size="large" loading="{{deleting}}" bindtap="deleteMoment">删除回忆</t-button>
+    </view>
+  </block>
+</view>
