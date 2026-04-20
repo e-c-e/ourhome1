@@ -1,0 +1,20 @@
+<view class="warm-input-shell {{customClass}}">
+  <textarea
+    wx:if="{{textarea}}"
+    class="warm-input warm-input--textarea"
+    style="min-height: {{minHeight}};"
+    value="{{value}}"
+    placeholder="{{placeholder}}"
+    maxlength="{{maxlength}}"
+    bindinput="handleInput"
+  />
+
+  <input
+    wx:else
+    class="warm-input"
+    value="{{value}}"
+    placeholder="{{placeholder}}"
+    maxlength="{{maxlength}}"
+    bindinput="handleInput"
+  />
+</view>

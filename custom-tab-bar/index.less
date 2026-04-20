@@ -2,6 +2,31 @@
 
 .custom-tab-bar {
   --td-tab-bar-height: @tab-bar-height;
+  padding: 10rpx 14rpx 18rpx;
+  background: linear-gradient(180deg, rgba(255, 249, 245, 0.88) 0%, rgba(255, 244, 247, 0.96) 100%);
+
+  :global(.t-tab-bar) {
+    border-radius: 28rpx;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 12rpx 34rpx rgba(255, 158, 170, 0.14);
+  }
+
+  :global(.t-tab-bar__nav) {
+    background: transparent;
+  }
+
+  :global(.t-tab-bar-item) {
+    color: rgba(92, 75, 58, 0.6);
+  }
+
+  :global(.t-tab-bar-item--active) {
+    color: #ff9eaa;
+  }
+
+  :global(.t-tab-bar-item__text) {
+    font-size: 22rpx;
+    line-height: 1.4;
+  }
 
   &-item {
     margin: 0;

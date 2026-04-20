@@ -1,42 +1,37 @@
-<t-navbar title="宠物岛"></t-navbar>
+<warm-navbar title="宠物岛"></warm-navbar>
 
 <view class="pet-page">
-  <view wx:if="{{loading}}" class="status-card">
-    <view class="status-card__title">正在唤醒宠物岛</view>
-    <view class="status-card__desc">先把你们的空间信息和互动数据准备好。</view>
-  </view>
+  <warm-status-card wx:if="{{loading}}" title="🐾 正在唤醒宠物岛" desc="先把你们的空间信息和互动数据准备好。"></warm-status-card>
 
-  <view wx:elif="{{errorMessage}}" class="status-card status-card--error">
-    <view class="status-card__title">加载失败</view>
-    <view class="status-card__desc">{{errorMessage}}</view>
-  </view>
+  <warm-status-card wx:elif="{{errorMessage}}" error="{{true}}" title="💭 加载失败" desc="{{errorMessage}}"></warm-status-card>
 
   <block wx:else>
     <view class="hero-card">
-      <view class="hero-card__eyebrow">宠物岛开发中</view>
+      <view class="hero-card__eyebrow">🐾 宠物岛开发中</view>
       <view class="hero-card__title">{{profile.partnerA}} 和 {{profile.partnerB}} 的小岛正在搭建</view>
       <view class="hero-card__desc">当前先保留温馨占位，后续会接入投喂、亲密度和成长状态。</view>
+      <view class="hero-card__badge">❤️ 回忆越多，小岛会越热闹</view>
     </view>
 
     <view class="stats-grid">
       <view class="stats-item">
         <text class="stats-item__value">{{stats.momentCount}}</text>
-        <text class="stats-item__label">回忆能量</text>
+        <text class="stats-item__label">🌸 回忆能量</text>
       </view>
       <view class="stats-item">
         <text class="stats-item__value">{{stats.anniversaryCount}}</text>
-        <text class="stats-item__label">纪念节点</text>
+        <text class="stats-item__label">❤️ 纪念节点</text>
       </view>
       <view class="stats-item">
         <text class="stats-item__value">{{stats.wishCount}}</text>
-        <text class="stats-item__label">待实现心愿</text>
+        <text class="stats-item__label">✨ 待实现心愿</text>
       </view>
     </view>
 
     <view class="panel">
-      <view class="panel__title">当前进度</view>
+      <view class="panel__title">🌷 当前进度</view>
       <view class="panel__desc">宠物岛页面已放入底部导航，后续可以在这里继续接入两只宠物、投喂和亲密度成长。</view>
-      <t-button theme="primary" size="large" bindtap="goSpaceSettings">打开空间设置</t-button>
+      <warm-button theme="primary" size="large" bind:action="goSpaceSettings">❤️ 打开空间设置</warm-button>
     </view>
   </block>
 </view>

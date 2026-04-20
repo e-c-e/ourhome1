@@ -1,7 +1,8 @@
 {
   "navigationStyle": "custom",
   "usingComponents": {
-    "t-navbar": "tdesign-miniprogram/navbar/navbar",
-    "t-button": "tdesign-miniprogram/button/button"
+    "warm-navbar": "/components/warm-navbar",
+    "warm-button": "/components/warm-button",
+    "warm-input": "/components/warm-input"
   }
 }

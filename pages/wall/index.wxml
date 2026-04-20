@@ -1,15 +1,15 @@
-<t-navbar title="时光墙"></t-navbar>
+<warm-navbar title="时光墙"></warm-navbar>
 
 <view class="wall-page">
-  <view wx:if="{{loading}}" class="status-card">
-    <view class="status-card__title">正在翻看回忆</view>
-    <view class="status-card__desc">把你们一起留下的照片和故事慢慢排好。</view>
+  <view class="wall-hero">
+    <view class="wall-hero__eyebrow">📷 时光墙</view>
+    <view class="wall-hero__title">把每个甜甜的小瞬间都留下来</view>
+    <view class="wall-hero__desc">照片、心情和故事都在这里慢慢堆成只属于你们的回忆墙。</view>
   </view>
 
-  <view wx:elif="{{errorMessage}}" class="status-card status-card--error">
-    <view class="status-card__title">加载失败</view>
-    <view class="status-card__desc">{{errorMessage}}</view>
-  </view>
+  <warm-status-card wx:if="{{loading}}" title="🌸 正在翻看回忆" desc="把你们一起留下的照片和故事慢慢排好。"></warm-status-card>
+
+  <warm-status-card wx:elif="{{errorMessage}}" error="{{true}}" title="💭 加载失败" desc="{{errorMessage}}"></warm-status-card>
 
   <view wx:elif="{{moments.length}}" class="wall-list">
     <view wx:for="{{moments}}" wx:key="id" class="wall-entry" data-id="{{item.id}}" bindtap="goMomentDetail">
@@ -32,7 +32,7 @@
       <view class="wall-entry__body">
         <view class="wall-entry__meta">
           <text class="wall-entry__date">{{item.date}}</text>
-          <text class="wall-entry__mood">{{item.mood}}</text>
+          <text class="wall-entry__mood">💗 {{item.mood}}</text>
         </view>
         <view class="wall-entry__title">{{item.title}}</view>
         <view class="wall-entry__text">{{item.content}}</view>
@@ -40,12 +40,9 @@
     </view>
   </view>
 
-  <view wx:else class="empty-state">
-    <view class="empty-state__title">时光墙还是空的</view>
-    <view class="empty-state__desc">先记录一张照片或一句话，让这里开始有故事。</view>
-  </view>
+  <warm-empty-state wx:else customClass="wall-empty" title="💕 时光墙还是空的" desc="先记录一张照片或一句话，让这里开始有故事。"></warm-empty-state>
 </view>
 
 <view class="wall-action">
-  <t-button theme="primary" size="large" shape="round" icon="add" bindtap="goRelease">记录今天</t-button>
+  <warm-button theme="primary" size="large" shape="round" bind:action="goRelease">❤️ 记录今天</warm-button>
 </view>

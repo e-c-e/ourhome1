@@ -1,0 +1,4 @@
+<view class="warm-status-card {{error ? 'warm-status-card--error' : ''}} {{customClass}}">
+  <view class="warm-status-card__title">{{title}}</view>
+  <view class="warm-status-card__desc">{{desc}}</view>
+</view>

@@ -1,0 +1,14 @@
+<t-button
+  theme="{{theme}}"
+  variant="{{variant}}"
+  size="{{size}}"
+  block="{{block}}"
+  loading="{{loading}}"
+  disabled="{{disabled}}"
+  shape="{{shape}}"
+  style="{{styleVars}}"
+  bindtap="handleTap"
+  t-class="{{rootClass}}"
+>
+  <slot></slot>
+</t-button>

@@ -1,8 +1,15 @@
-<t-navbar title="记录今天" left-arrow bind:left-click="goBack"></t-navbar>
+<warm-navbar title="记录今天" left-arrow bind:left-click="goBack"></warm-navbar>
 
 <view class="release-page">
+  <view class="release-hero">
+    <view class="release-hero__eyebrow">❤️ 今天的回忆</view>
+    <view class="release-hero__title">把这一刻温柔地保存下来</view>
+    <view class="release-hero__desc">可以是一张照片、一句对话、一个心情，也可以只是今天很想记住你。</view>
+  </view>
+
   <view class="panel">
-    <view class="panel__title">上传照片</view>
+    <view class="panel__title">📷 上传照片</view>
+    <view class="panel__desc">最多可选择 9 张，把今天最想留住的画面放进来。</view>
     <view class="upload-grid">
       <view
         wx:for="{{imageFiles}}"
@@ -11,11 +18,11 @@
         data-index="{{index}}"
       >
         <image class="upload-item__image" src="{{item.url}}" mode="aspectFill" data-current="{{item.url}}" bindtap="previewImage" />
-        <view class="upload-item__remove" data-index="{{index}}" bindtap="removeImage">删除</view>
+        <view class="upload-item__remove" data-index="{{index}}" bindtap="removeImage">移除</view>
       </view>
 
       <view wx:if="{{imageFiles.length < 9}}" class="upload-trigger" bindtap="chooseImages">
-        <text class="upload-trigger__icon">+</text>
+        <text class="upload-trigger__icon">🌸</text>
         <text class="upload-trigger__text">添加照片</text>
       </view>
     </view>
@@ -23,37 +30,42 @@
 
   <view class="panel">
     <view class="field">
-      <text class="field__label">标题</text>
-      <input
-        class="field__input"
+      <text class="field__label">✨ 标题</text>
+      <warm-input
+        customClass="field__input"
         value="{{title}}"
         placeholder="比如：一起吃晚饭"
         maxlength="20"
-        bindinput="handleTitleInput"
-      />
+        bind:input="handleTitleInput"
+      ></warm-input>
     </view>
 
     <view class="field">
-      <text class="field__label">内容</text>
-      <textarea
-        class="field__textarea"
+      <text class="field__label">💌 内容</text>
+      <warm-input
+        textarea="{{true}}"
+        customClass="field__textarea"
+        minHeight="260rpx"
         value="{{content}}"
         placeholder="记录今天的感受、对方说的话、一个小瞬间"
         maxlength="300"
-        bindinput="handleContentInput"
-      />
+        bind:input="handleContentInput"
+      ></warm-input>
     </view>
 
     <view class="field-row">
       <view class="field field--half">
-        <text class="field__label">日期</text>
-        <picker mode="date" value="{{recordDate}}" bindchange="handleDateChange">
+        <text class="field__label">📅 日期</text>
+        <view class="picker-shell">
           <view class="picker-value">{{recordDate}}</view>
-        </picker>
+          <picker class="picker-shell__native" mode="date" value="{{recordDate}}" bindchange="handleDateChange">
+            <view class="picker-shell__hit"></view>
+          </picker>
+        </view>
       </view>
 
       <view class="field field--half">
-        <text class="field__label">心情</text>
+        <text class="field__label">💗 心情</text>
         <view class="mood-list">
           <view
             wx:for="{{moods}}"
@@ -70,7 +82,7 @@
   </view>
 
   <view class="action-row">
-    <t-button theme="light" size="large" bindtap="saveDraft">存草稿</t-button>
-    <t-button theme="primary" size="large" loading="{{saving}}" bindtap="publishMoment">保存到时光墙</t-button>
+    <warm-button theme="light" size="large" bind:action="saveDraft">🌷 存草稿</warm-button>
+    <warm-button theme="primary" size="large" loading="{{saving}}" bind:action="publishMoment">❤️ 保存回忆</warm-button>
   </view>
 </view>

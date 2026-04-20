@@ -5,39 +5,43 @@
   padding: 24rpx 24rpx 180rpx;
   box-sizing: border-box;
   background:
-    radial-gradient(circle at top right, rgba(255, 201, 205, 0.4), transparent 32%),
-    linear-gradient(180deg, #fff7f8 0%, #fffdfb 46%, #fff8fb 100%);
+    radial-gradient(circle at top right, rgba(255, 182, 193, 0.24), transparent 32%),
+    linear-gradient(180deg, #fff9f5 0%, #fffdfb 46%, #fff8fb 100%);
 }
 
-.status-card,
-.wall-entry,
-.empty-state {
-  border-radius: 28rpx;
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 16rpx 48rpx rgba(204, 166, 162, 0.12);
-}
+.wall-hero {
+  margin-bottom: 24rpx;
+  padding: 32rpx;
+  border-radius: 32rpx;
+  background: linear-gradient(135deg, #fff0f3 0%, #fff8f2 100%);
+  box-shadow: 0 18rpx 42rpx rgba(255, 158, 170, 0.14);
 
-.status-card,
-.empty-state {
-  padding: 32rpx 28rpx;
-  text-align: center;
+  &__eyebrow {
+    font-size: 24rpx;
+    color: rgba(92, 75, 58, 0.58);
+    letter-spacing: 2rpx;
+  }
 
   &__title {
-    font-size: 32rpx;
+    margin-top: 12rpx;
+    font-size: 42rpx;
     font-weight: 700;
-    color: #2d2626;
+    line-height: 1.35;
+    color: #5c4b3a;
   }
 
   &__desc {
-    margin-top: 12rpx;
-    font-size: 26rpx;
-    line-height: 1.7;
-    color: rgba(45, 38, 38, 0.6);
+    margin-top: 16rpx;
+    font-size: 28rpx;
+    line-height: 1.8;
+    color: rgba(92, 75, 58, 0.74);
   }
 }
 
-.status-card--error {
-  background: #fff5f4;
+.wall-entry {
+  border-radius: 32rpx;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 16rpx 44rpx rgba(92, 75, 58, 0.08);
 }
 
 .wall-list {
@@ -47,7 +51,8 @@
 }
 
 .wall-entry {
-  padding: 18rpx;
+  padding: 20rpx;
+  background: linear-gradient(180deg, #fff9f7 0%, #fffefc 100%);
 
   &__gallery {
     display: grid;
@@ -74,29 +79,29 @@
 
   &__date {
     font-size: 24rpx;
-    color: rgba(45, 38, 38, 0.56);
+    color: rgba(92, 75, 58, 0.56);
   }
 
   &__mood {
     padding: 8rpx 16rpx;
     border-radius: 999rpx;
     font-size: 22rpx;
-    color: #c86167;
-    background: #fff0f1;
+    color: #c06f7b;
+    background: #fff0f3;
   }
 
   &__title {
     margin-top: 12rpx;
-    font-size: 30rpx;
+    font-size: 32rpx;
     font-weight: 700;
-    color: #2d2626;
+    color: #5c4b3a;
   }
 
   &__text {
     margin-top: 10rpx;
-    font-size: 26rpx;
-    line-height: 1.7;
-    color: rgba(45, 38, 38, 0.72);
+    font-size: 28rpx;
+    line-height: 1.8;
+    color: rgba(92, 75, 58, 0.72);
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;

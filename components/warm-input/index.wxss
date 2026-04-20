@@ -1,0 +1,21 @@
+.warm-input-shell {
+  width: 100%;
+}
+
+.warm-input {
+  width: 100%;
+  height: 88rpx;
+  padding: 0 24rpx;
+  border-radius: 24rpx;
+  background: #FFFDFC;
+  box-shadow: inset 0 0 0 2rpx rgba(255, 182, 193, 0.14);
+  font-size: 30rpx;
+  line-height: 88rpx;
+  color: #5C4B3A;
+}
+
+.warm-input--textarea {
+  height: auto;
+  padding: 22rpx 24rpx;
+  line-height: 1.8;
+}

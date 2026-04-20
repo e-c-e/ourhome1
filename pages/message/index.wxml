@@ -1,39 +1,39 @@
-<t-navbar title="纪念与心愿"></t-navbar>
+<warm-navbar title="纪念与心愿"></warm-navbar>
 
 <view class="memory-page">
-  <view wx:if="{{loading}}" class="status-card">
-    <view class="status-card__title">正在整理纪念日和心愿</view>
-    <view class="status-card__desc">把重要的日子和想一起做的事慢慢翻出来。</view>
-  </view>
+  <warm-status-card wx:if="{{loading}}" title="正在整理纪念日和心愿" desc="把重要的日子和想一起做的事慢慢翻出来。"></warm-status-card>
 
-  <view wx:elif="{{errorMessage}}" class="status-card status-card--error">
-    <view class="status-card__title">加载失败</view>
-    <view class="status-card__desc">{{errorMessage}}</view>
-  </view>
+  <warm-status-card wx:elif="{{errorMessage}}" error="{{true}}" title="加载失败" desc="{{errorMessage}}"></warm-status-card>
 
   <block wx:else>
   <view class="overview-card">
     <view class="overview-card__label">重要日期</view>
     <view class="overview-card__value">{{relationshipDays}} 天</view>
     <view class="overview-card__desc">{{startDateLabel}}</view>
-    <picker mode="date" value="{{startDatePickerValue}}" bindchange="handleStartDateChange">
+    <view class="picker-shell">
       <view class="ghost-button">{{startDateActionLabel}}</view>
-    </picker>
+      <picker class="picker-shell__native" mode="date" value="{{startDatePickerValue}}" bindchange="handleStartDateChange">
+        <view class="picker-shell__hit"></view>
+      </picker>
+    </view>
   </view>
 
   <view class="panel">
     <view class="panel__title">纪念日</view>
-    <input
-      class="field-input"
+    <warm-input
+      customClass="field-input"
       value="{{anniversaryName}}"
       placeholder="例如：第一次见面"
       maxlength="20"
-      bindinput="handleAnniversaryNameInput"
-    />
-    <picker mode="date" value="{{anniversaryDate}}" bindchange="handleAnniversaryDateChange">
+      bind:input="handleAnniversaryNameInput"
+    ></warm-input>
+    <view class="picker-shell">
       <view class="picker-input">{{anniversaryDate}}</view>
-    </picker>
-    <t-button theme="primary" size="large" bindtap="addAnniversary">新增纪念日</t-button>
+      <picker class="picker-shell__native" mode="date" value="{{anniversaryDate}}" bindchange="handleAnniversaryDateChange">
+        <view class="picker-shell__hit"></view>
+      </picker>
+    </view>
+    <warm-button theme="primary" size="large" bind:action="addAnniversary">新增纪念日</warm-button>
 
     <view wx:if="{{anniversaries.length}}" class="list-block">
       <view wx:for="{{anniversaries}}" wx:key="id" class="list-item">
@@ -45,19 +45,19 @@
       </view>
     </view>
 
-    <view wx:else class="empty-text">还没有纪念日，先添加一个重要日子。</view>
+    <warm-empty-state wx:else customClass="list-empty" title="还没有纪念日" desc="先添加一个重要日子。"></warm-empty-state>
   </view>
 
   <view class="panel">
     <view class="panel__title">心愿单</view>
-    <input
-      class="field-input"
+    <warm-input
+      customClass="field-input"
       value="{{wishText}}"
       placeholder="例如：一起去看海"
       maxlength="40"
-      bindinput="handleWishInput"
-    />
-    <t-button theme="primary" size="large" bindtap="addWish">新增心愿</t-button>
+      bind:input="handleWishInput"
+    ></warm-input>
+    <warm-button theme="primary" size="large" bind:action="addWish">新增心愿</warm-button>
 
     <view wx:if="{{wishes.length}}" class="list-block">
       <view wx:for="{{wishes}}" wx:key="id" class="list-item">
@@ -72,7 +72,7 @@
       </view>
     </view>
 
-    <view wx:else class="empty-text">把想一起做的事慢慢记下来。</view>
+    <warm-empty-state wx:else customClass="list-empty" title="还没有心愿" desc="把想一起做的事慢慢记下来。"></warm-empty-state>
   </view>
 
   </block>

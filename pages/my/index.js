@@ -45,7 +45,7 @@ Page({
   },
 
   handleInput(e) {
-    const { field } = e.currentTarget.dataset;
+    const field = e.currentTarget.dataset.field || e.detail.field;
     const { value } = e.detail;
     this.setData({
       [`profile.${field}`]: value,
@@ -57,6 +57,17 @@ Page({
     wx.showToast({
       title: '空间信息已保存',
       icon: 'success',
+    });
+  },
+
+  goBack() {
+    wx.navigateBack({
+      delta: 1,
+      fail: () => {
+        wx.switchTab({
+          url: '/pages/home/index',
+        });
+      },
     });
   },
 

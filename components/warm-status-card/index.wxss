@@ -1,0 +1,25 @@
+.warm-status-card {
+  padding: 32rpx 28rpx;
+  text-align: center;
+  border-radius: 32rpx;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 14rpx 36rpx rgba(255, 182, 193, 0.12);
+}
+
+.warm-status-card--error {
+  background: #FFF4F6;
+}
+
+.warm-status-card__title {
+  font-size: 34rpx;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #5C4B3A;
+}
+
+.warm-status-card__desc {
+  margin-top: 12rpx;
+  font-size: 28rpx;
+  line-height: 1.8;
+  color: rgba(92, 75, 58, 0.6);
+}

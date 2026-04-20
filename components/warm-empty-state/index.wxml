@@ -1,0 +1,5 @@
+<view class="warm-empty-state {{customClass}}">
+  <image wx:if="{{imageSrc}}" class="warm-empty-state__image" src="{{imageSrc}}" mode="aspectFill" />
+  <view class="warm-empty-state__title">{{title}}</view>
+  <view class="warm-empty-state__desc">{{desc}}</view>
+</view>

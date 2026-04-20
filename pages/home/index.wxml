@@ -1,54 +1,52 @@
-<t-navbar title="我们的空间" />
+<warm-navbar title="我们的空间"></warm-navbar>
 
 <view class="home-page">
   <view class="hero-card">
-    <view class="hero-card__eyebrow">我们的空间</view>
+    <view class="hero-card__eyebrow">❤️ 只属于我们的空间</view>
     <view class="hero-card__title">把日常慢慢写成回忆</view>
     <view class="hero-card__desc">
       记录每一次见面、每一段话、每一张照片，让属于你们的日子有迹可循。
     </view>
+    <view class="hero-card__badge">🌸 今天也要好好相爱</view>
 
     <view class="hero-stats">
       <view class="stat-box">
         <text class="stat-box__value">{{relationshipDays}}</text>
-        <text class="stat-box__label">在一起天数</text>
+        <text class="stat-box__label">❤️ 在一起天数</text>
       </view>
       <view class="stat-box">
         <text class="stat-box__value">{{momentCount}}</text>
-        <text class="stat-box__label">回忆条数</text>
+        <text class="stat-box__label">🌸 回忆条数</text>
       </view>
       <view class="stat-box">
         <text class="stat-box__value">{{latestMood}}</text>
-        <text class="stat-box__label">最近心情</text>
+        <text class="stat-box__label">🐾 最近心情</text>
       </view>
     </view>
 
     <view class="hero-actions">
-      <t-button theme="primary" size="large" icon="add" bindtap="goRelease">记录今天</t-button>
-      <picker mode="date" value="{{pickerDateValue}}" bindchange="handleStartDateChange">
-        <view class="date-picker">
-          📅 {{relationshipActionLabel}}
-        </view>
-      </picker>
+      <view class="hero-actions__item">
+        <warm-button theme="primary" size="large" block="{{true}}" bind:action="goRelease">❤️ 记录今天</warm-button>
+      </view>
+      <view class="hero-actions__item hero-actions__picker">
+        <warm-button theme="light" size="large" block="{{true}}">🌸 {{relationshipActionLabel}}</warm-button>
+        <picker class="hero-actions__picker-native" mode="date" value="{{pickerDateValue}}" bindchange="handleStartDateChange">
+          <view class="hero-actions__picker-hit"></view>
+        </picker>
+      </view>
     </view>
     <view class="hero-card__date">{{relationshipDateLabel}}</view>
   </view>
 
-  <view wx:if="{{loading}}" class="empty-state empty-state--soft">
-    <text class="empty-state__title">正在整理回忆...</text>
-    <text class="empty-state__desc">等一下，就把属于你们的内容放出来。</text>
-  </view>
+  <warm-empty-state wx:if="{{loading}}" customClass="home-empty home-empty--soft" title="🌷 正在整理回忆..." desc="等一下，就把属于你们的内容放出来。"></warm-empty-state>
 
-  <view wx:elif="{{errorMessage}}" class="empty-state empty-state--soft">
-    <text class="empty-state__title">加载失败</text>
-    <text class="empty-state__desc">{{errorMessage}}</text>
-  </view>
+  <warm-empty-state wx:elif="{{errorMessage}}" customClass="home-empty home-empty--soft" title="💭 加载失败" desc="{{errorMessage}}"></warm-empty-state>
 
   <block wx:elif="{{recentMoments.length}}">
     <view class="section-panel">
       <view class="section-head">
-        <text class="section-head__title">最近回忆</text>
-        <text class="section-head__sub">{{recentMoments.length}} 条</text>
+        <text class="section-head__title">🌸 最近回忆</text>
+        <text class="section-head__sub">共 {{recentMoments.length}} 条</text>
       </view>
 
       <view class="memory-feed">
@@ -72,7 +70,7 @@
           <view class="memory-entry__body">
             <view class="memory-entry__row">
               <text class="memory-entry__date">{{item.date}}</text>
-              <text class="memory-entry__mood">{{item.mood}}</text>
+              <text class="memory-entry__mood">💗 {{item.mood}}</text>
             </view>
             <view class="memory-entry__title">{{item.title}}</view>
             <view class="memory-entry__text">{{item.content}}</view>
@@ -83,21 +81,15 @@
 
     <view class="section-panel section-panel--pet">
       <view class="section-head section-head--single">
-        <text class="section-head__title">宠物岛动态</text>
+        <text class="section-head__title">🐾 宠物岛动态</text>
       </view>
       <view class="pet-tip">{{petIslandHint}}</view>
     </view>
   </block>
 
-  <view wx:else class="empty-state">
-    <image class="empty-state__image" src="/static/home/swiper0.png" mode="aspectFill" />
-    <text class="empty-state__title">还没有记录</text>
-    <text class="empty-state__desc">点下方按钮，写下第一条属于你们的回忆。</text>
-  </view>
+  <warm-empty-state wx:else customClass="home-empty" imageSrc="/static/home/swiper0.png" title="💕 还没有记录" desc="点下方按钮，写下第一条属于你们的回忆。"></warm-empty-state>
 </view>
 
 <view class="home-release">
-  <t-button theme="primary" size="large" shape="round" icon="add" bindtap="goRelease">
-    记录今天
-  </t-button>
+  <warm-button theme="primary" size="large" shape="round" block="{{true}}" bind:action="goRelease">❤️ 记录今天</warm-button>
 </view>

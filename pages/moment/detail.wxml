@@ -1,15 +1,9 @@
-<t-navbar title="回忆详情" left-arrow bind:left-click="goBack"></t-navbar>
+<warm-navbar title="回忆详情" left-arrow bind:left-click="goBack"></warm-navbar>
 
 <view class="moment-page">
-  <view wx:if="{{loading}}" class="status-card">
-    <view class="status-card__title">正在翻看这条回忆</view>
-    <view class="status-card__desc">一点点把照片、文字和情绪拿出来。</view>
-  </view>
+  <warm-status-card wx:if="{{loading}}" title="正在翻看这条回忆" desc="一点点把照片、文字和情绪拿出来。"></warm-status-card>
 
-  <view wx:elif="{{errorMessage}}" class="status-card status-card--error">
-    <view class="status-card__title">加载失败</view>
-    <view class="status-card__desc">{{errorMessage}}</view>
-  </view>
+  <warm-status-card wx:elif="{{errorMessage}}" error="{{true}}" title="加载失败" desc="{{errorMessage}}"></warm-status-card>
 
   <block wx:else>
     <view class="hero-card">
@@ -34,14 +28,11 @@
       />
     </view>
 
-    <view wx:if="{{!moment.images.length}}" class="empty-card">
-      <view class="empty-card__title">这一天没有上传照片</view>
-      <view class="empty-card__desc">只有文字也没关系，回忆本来就不一定要很满。</view>
-    </view>
+    <warm-empty-state wx:if="{{!moment.images.length}}" customClass="detail-empty" title="这一天没有上传照片" desc="只有文字也没关系，回忆本来就不一定要很满。"></warm-empty-state>
 
     <view class="detail-actions">
-      <t-button theme="light" size="large" bindtap="goBack">回到首页</t-button>
-      <t-button wx:if="{{moment.canDelete}}" theme="danger" size="large" loading="{{deleting}}" bindtap="deleteMoment">删除回忆</t-button>
+      <warm-button theme="light" size="large" bind:action="goBack">回到首页</warm-button>
+      <warm-button wx:if="{{moment.canDelete}}" theme="danger" size="large" loading="{{deleting}}" bind:action="deleteMoment">删除回忆</warm-button>
     </view>
   </block>
 </view>

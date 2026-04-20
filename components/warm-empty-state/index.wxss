@@ -1,0 +1,28 @@
+.warm-empty-state {
+  padding: 56rpx 32rpx;
+  text-align: center;
+  border-radius: 32rpx;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 14rpx 36rpx rgba(255, 182, 193, 0.12);
+}
+
+.warm-empty-state__image {
+  width: 300rpx;
+  height: 220rpx;
+  margin: 0 auto 24rpx;
+  border-radius: 24rpx;
+  display: block;
+}
+
+.warm-empty-state__title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #5C4B3A;
+}
+
+.warm-empty-state__desc {
+  margin-top: 12rpx;
+  font-size: 28rpx;
+  line-height: 1.8;
+  color: rgba(92, 75, 58, 0.62);
+}

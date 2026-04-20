@@ -1,0 +1,51 @@
+.warm-navbar-shell {
+  position: relative;
+}
+
+.warm-navbar__left {
+  display: flex;
+  align-items: center;
+}
+
+.warm-navbar__content {
+  background: linear-gradient(180deg, rgba(255, 249, 245, 0.96) 0%, rgba(255, 240, 243, 0.92) 100%);
+  box-shadow: 0 10rpx 28rpx rgba(255, 158, 170, 0.08);
+}
+
+.warm-navbar__back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4rpx;
+  min-height: 60rpx;
+  padding: 0 18rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 6rpx 16rpx rgba(255, 182, 193, 0.12);
+}
+
+.warm-navbar__back-icon {
+  font-size: 34rpx;
+  line-height: 1;
+  color: #B86E79;
+}
+
+.warm-navbar__back-text {
+  font-size: 24rpx;
+  color: #B86E79;
+}
+
+.warm-navbar__title {
+  font-size: 32rpx;
+  font-weight: 700;
+  letter-spacing: 1rpx;
+  color: #5C4B3A;
+}
+
+.warm-navbar__left-icon {
+  color: #B86E79;
+}
+
+.warm-navbar__capsule {
+  opacity: 0.92;
+}

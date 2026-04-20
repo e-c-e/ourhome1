@@ -1,0 +1,18 @@
+<view class="warm-navbar-shell">
+  <t-navbar
+    title="{{title}}"
+    left-arrow="{{false}}"
+    bind:left-click="handleLeftClick"
+    t-class-left="warm-navbar__left"
+    t-class-content="warm-navbar__content"
+    t-class-title="warm-navbar__title"
+    t-class-left-icon="warm-navbar__left-icon"
+    t-class-capsule="warm-navbar__capsule"
+    style="--td-navbar-color: #5C4B3A; --td-navbar-bg-color: transparent; --td-navbar-capsule-border-color: rgba(255, 182, 193, 0.42); --td-navbar-left-arrow-size: 36rpx;"
+  >
+    <view wx:if="{{leftArrow}}" slot="left" class="warm-navbar__back" bindtap="handleBackTap">
+      <text class="warm-navbar__back-icon">‹</text>
+      <text class="warm-navbar__back-text">返回</text>
+    </view>
+  </t-navbar>
+</view>
