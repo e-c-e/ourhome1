@@ -1,6 +1,6 @@
 <warm-navbar title="回忆详情" left-arrow bind:left-click="goBack"></warm-navbar>
 
-<view class="moment-page">
+<view class="moment-page warm-fade-page">
   <warm-status-card wx:if="{{loading}}" title="正在翻看这条回忆" desc="一点点把照片、文字和情绪拿出来。"></warm-status-card>
 
   <warm-status-card wx:elif="{{errorMessage}}" error="{{true}}" title="加载失败" desc="{{errorMessage}}"></warm-status-card>
@@ -12,27 +12,52 @@
       <view class="hero-card__meta">
         <view class="meta-chip">{{moment.mood}}</view>
         <view class="meta-chip meta-chip--light">{{moment.creatorLabel}}留下的回忆</view>
+        <view wx:if="{{moment.location && moment.location.name}}" class="meta-chip meta-chip--light">📍 {{moment.location.name}}</view>
       </view>
       <view class="hero-card__desc">{{moment.content}}</view>
     </view>
 
-    <view wx:if="{{moment.images.length}}" class="gallery-grid">
-      <image
-        wx:for="{{moment.images}}"
-        wx:key="*this"
-        class="gallery-grid__item"
-        src="{{item}}"
-        mode="aspectFill"
-        data-current="{{item}}"
-        bindtap="previewImage"
-      />
+    <view wx:if="{{moment.images.length}}" class="gallery-showcase">
+      <image class="gallery-showcase__main" src="{{currentImage || moment.images[0]}}" mode="aspectFill" data-current="{{currentImage || moment.images[0]}}" bindtap="previewImage" />
+      <view class="gallery-showcase__count">共 {{moment.imageCount}} 张</view>
+      <scroll-view scroll-x="true" class="gallery-strip">
+        <image wx:for="{{moment.images}}" wx:key="*this" class="gallery-strip__item {{item === (currentImage || moment.images[0]) ? 'gallery-strip__item--active' : ''}}" src="{{item}}" mode="aspectFill" data-src="{{item}}" bindtap="selectImage" />
+      </scroll-view>
     </view>
 
     <warm-empty-state wx:if="{{!moment.images.length}}" customClass="detail-empty" title="这一天没有上传照片" desc="只有文字也没关系，回忆本来就不一定要很满。"></warm-empty-state>
+
+    <view class="interaction-card">
+      <view class="interaction-card__head">
+        <view class="interaction-card__stats">💕 {{moment.likeCount}} 赞 · 💬 {{moment.commentCount}} 评论</view>
+        <warm-button theme="{{moment.likedByMe ? 'primary' : 'light'}}" size="large" loading="{{likeLoading}}" bind:action="toggleLike">{{moment.likedByMe ? '已喜欢' : '点个喜欢'}}</warm-button>
+      </view>
+
+      <view class="comment-editor">
+        <warm-input textarea="{{true}}" customClass="comment-editor__input" minHeight="140rpx" maxlength="120" value="{{commentText}}" placeholder="写下一句回应，让这条回忆更完整" bind:input="handleCommentInput"></warm-input>
+        <warm-button theme="primary" size="large" loading="{{commenting}}" bind:action="submitComment">发送评论</warm-button>
+      </view>
+
+      <view wx:if="{{moment.comments.length}}" class="comment-list">
+        <view wx:for="{{moment.comments}}" wx:key="id" class="comment-item">
+          <view class="comment-item__head">
+            <text class="comment-item__name">{{item.creatorLabel}}</text>
+            <text class="comment-item__time">{{item.timeLabel}}</text>
+          </view>
+          <view class="comment-item__content">{{item.content}}</view>
+          <text wx:if="{{item.canDelete}}" class="comment-item__delete" data-comment-id="{{item.id}}" bindtap="removeComment">删除</text>
+        </view>
+      </view>
+
+      <warm-empty-state wx:else customClass="detail-empty detail-empty--comments" title="还没有评论" desc="先写下第一句回应，让这条回忆更有互动感。"></warm-empty-state>
+    </view>
 
     <view class="detail-actions">
       <warm-button theme="light" size="large" bind:action="goBack">回到首页</warm-button>
       <warm-button wx:if="{{moment.canDelete}}" theme="danger" size="large" loading="{{deleting}}" bind:action="deleteMoment">删除回忆</warm-button>
     </view>
+
+    <view class="warm-page-end"></view>
+
   </block>
 </view>

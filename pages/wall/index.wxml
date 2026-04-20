@@ -1,46 +1,170 @@
 <warm-navbar title="时光墙"></warm-navbar>
 
-<view class="wall-page">
-  <view class="wall-hero">
-    <view class="wall-hero__eyebrow">📷 时光墙</view>
-    <view class="wall-hero__title">把每个甜甜的小瞬间都留下来</view>
-    <view class="wall-hero__desc">照片、心情和故事都在这里慢慢堆成只属于你们的回忆墙。</view>
+<view class="wall-page warm-fade-page">
+  <view class="wall-bg" aria-hidden="true">
+    <view class="wall-bg__veil"></view>
+    <view class="wall-bg__glow wall-bg__glow--top"></view>
+    <view class="wall-bg__glow wall-bg__glow--bottom"></view>
+    <view class="wall-bg__cloud wall-bg__cloud--left"></view>
+    <view class="wall-bg__cloud wall-bg__cloud--right"></view>
+    <text class="wall-bg__heart wall-bg__heart--one">❤</text>
+    <text class="wall-bg__heart wall-bg__heart--two">❤</text>
+    <text class="wall-bg__heart wall-bg__heart--three">❤</text>
+    <text class="wall-bg__heart wall-bg__heart--four">❤</text>
+    <view class="wall-bg__side wall-bg__side--left">
+      <text class="wall-bg__sticker wall-bg__sticker--bow">🎀</text>
+      <text class="wall-bg__sticker wall-bg__sticker--star">✦</text>
+      <text class="wall-bg__sticker wall-bg__sticker--flower">❀</text>
+    </view>
+    <view class="wall-bg__side wall-bg__side--right">
+      <text class="wall-bg__sticker wall-bg__sticker--spark">✧</text>
+      <text class="wall-bg__sticker wall-bg__sticker--bear">ʕ·ᴥ·ʔ</text>
+      <text class="wall-bg__sticker wall-bg__sticker--ribbon">⌒❤⌒</text>
+    </view>
+    <view class="wall-bg__bottom">
+      <text class="wall-bg__bottom-item wall-bg__bottom-item--moon">☾</text>
+      <view class="wall-bg__garland">
+        <text class="wall-bg__garland-star wall-bg__garland-star--one">✦</text>
+        <text class="wall-bg__garland-star wall-bg__garland-star--two">✧</text>
+        <text class="wall-bg__garland-star wall-bg__garland-star--three">✦</text>
+      </view>
+      <text class="wall-bg__bottom-item wall-bg__bottom-item--left">☁</text>
+      <text class="wall-bg__bottom-item wall-bg__bottom-item--left-heart">❤</text>
+      <text class="wall-bg__bottom-item wall-bg__bottom-item--letter-left">✉</text>
+      <text class="wall-bg__bottom-item wall-bg__bottom-item--center">૮₍ ˶ᵔ ᵕ ᵔ˶ ₎ა</text>
+      <text class="wall-bg__bottom-item wall-bg__bottom-item--letter-right">✉</text>
+      <text class="wall-bg__bottom-item wall-bg__bottom-item--right-star">✦</text>
+      <text class="wall-bg__bottom-item wall-bg__bottom-item--right">☁</text>
+    </view>
   </view>
 
+  <view class="wall-content">
   <warm-status-card wx:if="{{loading}}" title="🌸 正在翻看回忆" desc="把你们一起留下的照片和故事慢慢排好。"></warm-status-card>
 
   <warm-status-card wx:elif="{{errorMessage}}" error="{{true}}" title="💭 加载失败" desc="{{errorMessage}}"></warm-status-card>
 
-  <view wx:elif="{{moments.length}}" class="wall-list">
-    <view wx:for="{{moments}}" wx:key="id" class="wall-entry" data-id="{{item.id}}" bindtap="goMomentDetail">
-      <view class="wall-entry__gallery" wx:if="{{item.previewImages.length}}">
-        <image
-          wx:for="{{item.previewImages}}"
-          wx:key="*this"
-          class="wall-entry__thumb"
-          src="{{item}}"
-          mode="aspectFill"
-          data-images="{{item.previewImages}}"
-          data-current="{{item}}"
-          catchtap="previewMomentImages"
-        />
-      </view>
-      <view wx:else class="wall-entry__cover-wrap">
-        <image class="wall-entry__cover" src="{{item.cover}}" mode="aspectFill" />
-      </view>
-
-      <view class="wall-entry__body">
-        <view class="wall-entry__meta">
-          <text class="wall-entry__date">{{item.date}}</text>
-          <text class="wall-entry__mood">💗 {{item.mood}}</text>
+  <block wx:elif="{{true}}">
+    <view class="story-hero">
+      <view class="story-hero__top">
+        <view>
+          <view class="story-hero__eyebrow">📷 时光墙</view>
+          <view class="story-hero__title">把每个甜甜的小瞬间都留下来</view>
         </view>
-        <view class="wall-entry__title">{{item.title}}</view>
-        <view class="wall-entry__text">{{item.content}}</view>
+        <view class="story-hero__month">📅 {{month}}</view>
+      </view>
+      <view class="story-hero__desc">照片、心情和故事都在这里慢慢堆成只属于你们的回忆墙，也把这个月慢慢翻成一本温柔小日记。</view>
+      <view class="story-hero__note">💕 这个月已经悄悄留下 {{summary.recordCount}} 条回忆啦</view>
+
+      <view class="story-stats">
+        <view class="diary-stat">
+          <text class="diary-stat__value">{{summary.recordCount}}</text>
+          <text class="diary-stat__label">回忆条数</text>
+        </view>
+        <view class="diary-stat">
+          <text class="diary-stat__value">{{summary.activeDays}}</text>
+          <text class="diary-stat__label">有记录的天</text>
+        </view>
+        <view class="diary-stat">
+          <text class="diary-stat__value">{{summary.photoCount}}</text>
+          <text class="diary-stat__label">照片数量</text>
+        </view>
       </view>
     </view>
-  </view>
 
-  <warm-empty-state wx:else customClass="wall-empty" title="💕 时光墙还是空的" desc="先记录一张照片或一句话，让这里开始有故事。"></warm-empty-state>
+    <view class="calendar-panel">
+      <view class="calendar-toolbar">
+        <view class="calendar-toolbar__action" bindtap="prevMonth">‹ 上个月</view>
+        <view class="calendar-toolbar__title">{{month}}</view>
+        <view class="calendar-toolbar__action" bindtap="nextMonth">下个月 ›</view>
+      </view>
+
+      <view class="calendar-weekdays">
+        <text wx:for="{{weekLabels}}" wx:key="*this" class="calendar-weekdays__item">{{item}}</text>
+      </view>
+
+      <view class="calendar-grid">
+        <view wx:for="{{calendarWeeks}}" wx:key="index" class="calendar-row">
+          <view wx:for="{{item}}" wx:key="id" class="calendar-cell {{item.isBlank ? 'calendar-cell--blank' : ''}} {{item.isSelected ? 'calendar-cell--selected' : ''}} {{item.isToday ? 'calendar-cell--today' : ''}}" data-date="{{item.date}}" bindtap="selectDate">
+            <block wx:if="{{!item.isBlank}}">
+              <text class="calendar-cell__day">{{item.day}}</text>
+              <view wx:if="{{item.recordCount}}" class="calendar-cell__dot">{{item.recordCount}}</view>
+            </block>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="day-panel">
+      <view class="day-panel__head">
+        <view>
+          <view class="day-panel__title">{{selectedDate}}</view>
+          <view class="day-panel__desc">当天记录 {{dayMoments.length}} 条</view>
+        </view>
+        <warm-button theme="primary" size="large" bind:action="goRelease">❤️ 记录这一天</warm-button>
+      </view>
+
+      <view wx:if="{{dayMoments.length}}" class="day-list">
+        <view wx:for="{{dayMoments}}" wx:key="_id" class="day-card" data-id="{{item._id}}" bindtap="goMomentDetail">
+          <image wx:if="{{item.cover}}" class="day-card__cover" src="{{item.cover}}" mode="aspectFill"></image>
+          <view class="day-card__body">
+            <view class="day-card__meta">
+              <text class="day-card__mood">💗 {{item.mood}}</text>
+              <text class="day-card__count">{{item.imageCount}} 张图 · {{item.commentCount}} 评论</text>
+            </view>
+            <view class="day-card__title">{{item.title}}</view>
+            <view class="day-card__desc">{{item.content}}</view>
+          </view>
+        </view>
+      </view>
+
+      <warm-empty-state wx:else customClass="day-empty" title="✨ 这一天还没有记录" desc="点右侧按钮，把这一整天的情绪和小瞬间写下来。"></warm-empty-state>
+    </view>
+
+    <view wx:if="{{moments.length}}" class="wall-list">
+      <view wx:for="{{moments}}" wx:key="id" class="wall-entry" data-id="{{item.id}}" bindtap="goMomentDetail">
+        <view wx:if="{{reactionMomentId === item.id}}" class="wall-entry__reaction">{{reactionEmoji}}</view>
+        <view class="wall-entry__gallery" wx:if="{{item.previewImages.length}}">
+          <image
+            wx:for="{{item.previewImages}}"
+            wx:key="*this"
+            class="wall-entry__thumb"
+            src="{{item}}"
+            mode="aspectFill"
+            data-images="{{item.previewImages}}"
+            data-current="{{item}}"
+            catchtap="previewMomentImages"
+          />
+        </view>
+        <view wx:else class="wall-entry__cover-wrap">
+          <image class="wall-entry__cover" src="{{item.cover}}" mode="aspectFill" />
+        </view>
+
+        <view class="wall-entry__body">
+          <view class="wall-entry__meta">
+            <text class="wall-entry__date">{{item.date}}</text>
+            <text class="wall-entry__mood">💗 {{item.mood}}</text>
+          </view>
+          <view class="wall-entry__title">{{item.title}}</view>
+          <view class="wall-entry__text">{{item.content}}</view>
+          <view class="wall-entry__footer">
+            <view class="wall-entry__tags">
+              <text class="wall-entry__tag">🖼 {{item.imageCount}} 张</text>
+              <text wx:if="{{item.locationText}}" class="wall-entry__tag">📍 {{item.locationText}}</text>
+            </view>
+            <view class="wall-entry__ops">
+              <view class="wall-entry__op wall-entry__op--like {{item.likedByMe ? 'wall-entry__op--active' : ''}}" data-id="{{item.id}}" catchtap="toggleLike">🎀 {{item.likeCount}}</view>
+              <view class="wall-entry__op wall-entry__op--comment">🫧 {{item.commentCount}}</view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+    <warm-empty-state wx:else customClass="wall-empty" title="💕 时光墙还是空的" desc="先记录一张照片或一句话，让这里开始有故事。"></warm-empty-state>
+
+    <view class="warm-page-end"></view>
+
+  </block>
+  </view>
 </view>
 
 <view class="wall-action">

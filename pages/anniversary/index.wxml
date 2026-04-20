@@ -1,6 +1,40 @@
 <warm-navbar title="纪念日"></warm-navbar>
 
-<view class="anniversary-page">
+<view class="anniversary-page warm-fade-page">
+  <view class="anniversary-bg" aria-hidden="true">
+    <view class="anniversary-bg__veil"></view>
+    <view class="anniversary-bg__glow anniversary-bg__glow--top"></view>
+    <view class="anniversary-bg__glow anniversary-bg__glow--bottom"></view>
+    <view class="anniversary-bg__cloud anniversary-bg__cloud--left"></view>
+    <view class="anniversary-bg__cloud anniversary-bg__cloud--right"></view>
+    <text class="anniversary-bg__moon">☾</text>
+    <view class="anniversary-bg__side anniversary-bg__side--left">
+      <text class="anniversary-bg__sticker anniversary-bg__sticker--bow">🎀</text>
+      <text class="anniversary-bg__sticker anniversary-bg__sticker--star">✦</text>
+      <text class="anniversary-bg__sticker anniversary-bg__sticker--heart">❤</text>
+      <text class="anniversary-bg__sticker anniversary-bg__sticker--mini-envelope">✉</text>
+    </view>
+    <view class="anniversary-bg__side anniversary-bg__side--right">
+      <text class="anniversary-bg__sticker anniversary-bg__sticker--spark">✧</text>
+      <text class="anniversary-bg__sticker anniversary-bg__sticker--flower">❀</text>
+      <text class="anniversary-bg__sticker anniversary-bg__sticker--ribbon">⌒❤⌒</text>
+    </view>
+    <view class="anniversary-bg__bottom">
+      <view class="anniversary-bg__garland">
+        <text class="anniversary-bg__garland-star anniversary-bg__garland-star--one">✦</text>
+        <text class="anniversary-bg__garland-star anniversary-bg__garland-star--two">✧</text>
+        <text class="anniversary-bg__garland-star anniversary-bg__garland-star--three">✦</text>
+      </view>
+      <text class="anniversary-bg__bottom-item anniversary-bg__bottom-item--moon-small">☾</text>
+      <text class="anniversary-bg__bottom-item anniversary-bg__bottom-item--envelope-left">✉</text>
+      <text class="anniversary-bg__bottom-item anniversary-bg__bottom-item--cloud-left">☁</text>
+      <text class="anniversary-bg__bottom-item anniversary-bg__bottom-item--cloud-right">☁</text>
+      <text class="anniversary-bg__bottom-item anniversary-bg__bottom-item--letter">✉</text>
+      <text class="anniversary-bg__bottom-item anniversary-bg__bottom-item--star">✧</text>
+    </view>
+  </view>
+
+  <view class="anniversary-content">
   <warm-status-card wx:if="{{loading}}" title="🌸 正在整理重要日期" desc="把和你们有关的每个纪念节点都轻轻摆好。"></warm-status-card>
 
   <warm-status-card wx:elif="{{errorMessage}}" error="{{true}}" title="💭 加载失败" desc="{{errorMessage}}"></warm-status-card>
@@ -10,12 +44,47 @@
       <view class="overview-card__label">❤️ 我们的纪念日</view>
       <view class="overview-card__value">{{relationshipDays}} 天</view>
       <view class="overview-card__desc">{{startDateLabel}}</view>
+      <view class="milestone-card">
+        <view class="milestone-card__row">
+          <text class="milestone-card__title">下一站 {{nextMilestone}} 天</text>
+          <text class="milestone-card__tag">里程碑</text>
+        </view>
+        <view class="milestone-card__stats">
+          <view class="milestone-card__stat">
+            <text class="milestone-card__stat-value">{{walkedDays}}</text>
+            <text class="milestone-card__stat-label">这一阶段已走过</text>
+          </view>
+          <view class="milestone-card__stat">
+            <text class="milestone-card__stat-value">{{nextMilestone - relationshipDays}}</text>
+            <text class="milestone-card__stat-label">距离下一站</text>
+          </view>
+        </view>
+        <view wx:if="{{prevMilestone}}" class="milestone-card__range">当前处在 {{prevMilestone}} 天到 {{nextMilestone}} 天之间</view>
+        <view class="milestone-card__desc">{{milestoneLabel}}</view>
+      </view>
       <view class="picker-shell">
         <view class="ghost-button">🌷 {{startDateActionLabel}}</view>
         <picker class="picker-shell__native" mode="date" value="{{startDatePickerValue}}" bindchange="handleStartDateChange">
           <view class="picker-shell__hit"></view>
         </picker>
       </view>
+    </view>
+
+    <view class="panel">
+      <view class="panel__title">🔔 纪念日提醒</view>
+      <view class="panel__sub">当前以小程序内提醒为主，服务通知模板接入后可直接沿用这里的设置。</view>
+      <view class="reminder-actions">
+        <warm-button theme="{{reminderSettings.enabled ? 'primary' : 'light'}}" size="large" bind:action="toggleReminderEnabled">{{reminderSettings.enabled ? '提醒已开启' : '开启提醒'}}</warm-button>
+        <warm-button theme="light" size="large" bind:action="cycleReminderWindow">提前 {{reminderSettings.daysBefore}} 天</warm-button>
+      </view>
+
+      <view wx:if="{{reminderTips.length}}" class="reminder-list">
+        <view wx:for="{{reminderTips}}" wx:key="id" class="reminder-item">
+          <view class="reminder-item__title">{{item.title}}</view>
+          <view class="reminder-item__desc">{{item.desc}}</view>
+        </view>
+      </view>
+      <warm-empty-state wx:else customClass="list-empty" title="🌷 暂时没有临近提醒" desc="等纪念日靠近时，会在这里提前告诉你。"></warm-empty-state>
     </view>
 
     <view class="panel">
@@ -41,6 +110,15 @@
           <view>
             <view class="list-item__title">{{item.name}}</view>
             <view class="list-item__desc">{{item.date}} · {{item.diffLabel}}</view>
+            <view class="anniversary-progress">
+              <view class="anniversary-progress__track">
+                <view class="anniversary-progress__value" style="width: {{item.progressPercent}}%;"></view>
+              </view>
+              <view class="anniversary-progress__meta">
+                <view class="anniversary-progress__label">{{item.progressLabel}}</view>
+                <view class="anniversary-progress__percent">{{item.progressPercentText}}</view>
+              </view>
+            </view>
           </view>
           <text class="list-item__action" data-id="{{item.id}}" bindtap="removeAnniversary">移除</text>
         </view>
@@ -48,5 +126,9 @@
 
       <warm-empty-state wx:else customClass="list-empty" title="💕 还没有纪念日" desc="先写下一个只属于你们的重要日子。"></warm-empty-state>
     </view>
+
+    <view class="warm-page-end"></view>
+
   </block>
+  </view>
 </view>

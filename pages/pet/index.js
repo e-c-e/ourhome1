@@ -1,4 +1,9 @@
-import { fetchSpaceData } from '../../api/relationship';
+import {
+  changePetSkin as changePetSkinRequest,
+  feedPet as feedPetRequest,
+  fetchPetData,
+  interactPet as interactPetRequest,
+} from '../../api/relationship';
 import { ensureAuthorizedPage } from '../../utils/pageAuth';
 
 Page({
@@ -13,6 +18,9 @@ Page({
       anniversaryCount: 0,
       wishCount: 0,
     },
+    pets: [],
+    islandLevel: 1,
+    actionKey: '',
     loading: true,
     errorMessage: '',
   },
@@ -27,10 +35,12 @@ Page({
     this.setData({ loading: true, errorMessage: '' });
 
     try {
-      const { profile, stats } = await fetchSpaceData();
+      const { profile, stats, pets = [], islandLevel = 1 } = await fetchPetData();
       this.setData({
         profile,
         stats,
+        pets,
+        islandLevel,
         loading: false,
       });
     } catch (error) {
@@ -45,5 +55,39 @@ Page({
     wx.navigateTo({
       url: '/pages/my/index',
     });
+  },
+
+  async runPetAction(actionKey, request) {
+    if (this.data.actionKey) return;
+    this.setData({ actionKey });
+    try {
+      const result = await request();
+      this.setData({
+        pets: result.pets || this.data.pets,
+        islandLevel: result.islandLevel || this.data.islandLevel,
+      });
+    } catch (error) {
+      wx.showToast({
+        title: error.message || '宠物互动失败，请稍后重试',
+        icon: 'none',
+      });
+    } finally {
+      this.setData({ actionKey: '' });
+    }
+  },
+
+  handleFeedPet(e) {
+    const { id } = e.currentTarget.dataset;
+    this.runPetAction(`feed-${id}`, () => feedPetRequest(id));
+  },
+
+  handleInteractPet(e) {
+    const { id } = e.currentTarget.dataset;
+    this.runPetAction(`hug-${id}`, () => interactPetRequest(id, 'hug'));
+  },
+
+  handleChangeSkin(e) {
+    const { id } = e.currentTarget.dataset;
+    this.runPetAction(`skin-${id}`, () => changePetSkinRequest(id));
   },
 });

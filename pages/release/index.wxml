@@ -1,6 +1,6 @@
 <warm-navbar title="记录今天" left-arrow bind:left-click="goBack"></warm-navbar>
 
-<view class="release-page">
+<view class="release-page warm-fade-page">
   <view class="release-hero">
     <view class="release-hero__eyebrow">❤️ 今天的回忆</view>
     <view class="release-hero__title">把这一刻温柔地保存下来</view>
@@ -65,6 +65,17 @@
       </view>
 
       <view class="field field--half">
+        <text class="field__label">📍 地点</text>
+        <view class="location-box {{location ? 'location-box--active' : ''}}">
+          <view class="location-box__text">{{location ? location.name : '还没有标记地点'}}</view>
+          <view class="location-box__actions">
+            <text class="location-box__action" bindtap="chooseLocation">{{location ? '重选' : '选择'}}</text>
+            <text wx:if="{{location}}" class="location-box__action location-box__action--muted" bindtap="clearLocation">清除</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="field field--half field--mood {{moods[selectedMoodIndex] === '自定义' ? 'field--full' : ''}}">
         <text class="field__label">💗 心情</text>
         <view class="mood-list">
           <view
@@ -77,6 +88,14 @@
             {{item}}
           </view>
         </view>
+        <warm-input
+          wx:if="{{moods[selectedMoodIndex] === '自定义'}}"
+          customClass="mood-custom-input"
+          value="{{customMood}}"
+          placeholder="写下此刻的心情，比如：有点想哭 / 心里堵堵的"
+          maxlength="12"
+          bind:input="handleCustomMoodInput"
+        ></warm-input>
       </view>
     </view>
   </view>
@@ -85,4 +104,6 @@
     <warm-button theme="light" size="large" bind:action="saveDraft">🌷 存草稿</warm-button>
     <warm-button theme="primary" size="large" loading="{{saving}}" bind:action="publishMoment">❤️ 保存回忆</warm-button>
   </view>
+
+  <view class="warm-page-end"></view>
 </view>

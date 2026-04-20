@@ -1,5 +1,22 @@
-import { deleteMoment, fetchMomentDetail } from '../../api/relationship';
+import { addMomentComment, deleteMoment, fetchMomentDetail, removeMomentComment, toggleMomentLike } from '../../api/relationship';
 import { ensureAuthorizedPage } from '../../utils/pageAuth';
+
+function formatTimeLabel(timestamp) {
+  if (!timestamp) return '';
+  const date = new Date(timestamp);
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
+  const hours = `${date.getHours()}`.padStart(2, '0');
+  const minutes = `${date.getMinutes()}`.padStart(2, '0');
+  return `${month}-${day} ${hours}:${minutes}`;
+}
+
+function mapComments(comments = []) {
+  return comments.map((item) => ({
+    ...item,
+    timeLabel: formatTimeLabel(item.createdAt),
+  }));
+}
 
 Page({
   data: {
@@ -8,6 +25,10 @@ Page({
     loading: true,
     errorMessage: '',
     deleting: false,
+    likeLoading: false,
+    commenting: false,
+    commentText: '',
+    currentImage: '',
   },
 
   async onLoad(options) {
@@ -35,11 +56,13 @@ Page({
         moment: {
           ...moment,
           images: moment.images || [],
+          comments: mapComments(moment.comments || []),
           content: moment.content || '这一天没有留下文字，但留下了想念。',
           title: moment.title || '今天的记录',
           mood: moment.mood || '日常',
           date: moment.date || '',
         },
+        currentImage: (moment.images && moment.images[0]) || '',
         loading: false,
       });
     } catch (error) {
@@ -58,6 +81,88 @@ Page({
       current,
       urls: images,
     });
+  },
+
+  selectImage(e) {
+    const { src } = e.currentTarget.dataset;
+    if (!src) return;
+
+    this.setData({ currentImage: src });
+  },
+
+  async toggleLike() {
+    if (!this.data.id || !this.data.moment || this.data.likeLoading) return;
+
+    this.setData({ likeLoading: true });
+    try {
+      const result = await toggleMomentLike(this.data.id);
+      this.setData({
+        moment: {
+          ...this.data.moment,
+          likedByMe: result.liked,
+          likeCount: result.likeCount,
+        },
+      });
+    } catch (error) {
+      wx.showToast({
+        title: error.message || '操作失败，请稍后重试',
+        icon: 'none',
+      });
+    } finally {
+      this.setData({ likeLoading: false });
+    }
+  },
+
+  handleCommentInput(e) {
+    this.setData({
+      commentText: e.detail.value,
+    });
+  },
+
+  async submitComment() {
+    const content = this.data.commentText.trim();
+    if (!content || this.data.commenting) return;
+
+    this.setData({ commenting: true });
+    try {
+      const result = await addMomentComment(this.data.id, content);
+      this.setData({
+        commentText: '',
+        moment: {
+          ...this.data.moment,
+          comments: mapComments((this.data.moment.comments || []).concat(result.comment)),
+          commentCount: result.commentCount,
+        },
+      });
+    } catch (error) {
+      wx.showToast({
+        title: error.message || '评论失败，请稍后重试',
+        icon: 'none',
+      });
+    } finally {
+      this.setData({ commenting: false });
+    }
+  },
+
+  async removeComment(e) {
+    const { commentId } = e.currentTarget.dataset;
+    if (!commentId) return;
+
+    try {
+      const result = await removeMomentComment(this.data.id, commentId);
+      this.setData({
+        moment: {
+          ...this.data.moment,
+          comments: (this.data.moment.comments || []).filter((item) => item.id !== commentId),
+          commentCount: result.commentCount,
+        },
+      });
+    } catch (error) {
+      wx.showToast({
+        title: error.message || '删除评论失败',
+        icon: 'none',
+      });
+    }
   },
 
   async deleteMoment() {

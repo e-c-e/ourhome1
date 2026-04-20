@@ -11,6 +11,48 @@ const WISHES_COLLECTION = 'wishes';
 const SPACE_DOC_ID = 'main';
 const MAX_SPACE_MEMBERS = 2;
 
+function buildDefaultReminderSettings() {
+  return {
+    enabled: false,
+    daysBefore: 3,
+    inAppEnabled: true,
+    serviceEnabled: false,
+    updatedAt: Date.now(),
+  };
+}
+
+function buildDefaultPet(index) {
+  const presets = [
+    {
+      id: 'pet-sugar',
+      name: '奶糖',
+      species: 'cat',
+      avatar: '🐱',
+      mood: '等你抱抱',
+      intimacy: 32,
+      satiety: 76,
+    },
+    {
+      id: 'pet-chestnut',
+      name: '栗子',
+      species: 'dog',
+      avatar: '🐶',
+      mood: '想一起散步',
+      intimacy: 28,
+      satiety: 72,
+    },
+  ];
+
+  const preset = presets[index] || presets[0];
+  return {
+    ...preset,
+    skinIndex: 0,
+    lastFedAt: 0,
+    lastInteractAt: 0,
+    updatedAt: Date.now(),
+  };
+}
+
 function isCollectionMissingError(error) {
   const message = `${(error && error.message) || ''} ${(error && error.errMsg) || ''}`;
   return message.includes('database collection not exists') || message.includes('DATABASE_COLLECTION_NOT_EXIST');
@@ -23,6 +65,8 @@ function buildDefaultSpace() {
     partnerB: '你',
     intro: '把普通日子慢慢写成回忆。',
     startDate: '',
+    reminderSettings: buildDefaultReminderSettings(),
+    pets: [buildDefaultPet(0), buildDefaultPet(1)],
     collectionsReady: false,
     updatedAt: Date.now(),
   };

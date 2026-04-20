@@ -91,8 +91,68 @@ export async function createMoment(payload) {
   });
 }
 
+export function toggleMomentLike(id) {
+  return callCloudFunction('relationship', {
+    action: 'toggleMomentLike',
+    data: { id },
+  });
+}
+
+export function addMomentComment(id, content) {
+  return callCloudFunction('relationship', {
+    action: 'addMomentComment',
+    data: { id, content },
+  });
+}
+
+export function removeMomentComment(momentId, commentId) {
+  return callCloudFunction('relationship', {
+    action: 'removeMomentComment',
+    data: { momentId, commentId },
+  });
+}
+
 export function fetchSpaceData() {
   return callCloudFunction('relationship', { action: 'getSpaceData' });
+}
+
+export function fetchPetData() {
+  return callCloudFunction('relationship', { action: 'getPetData' });
+}
+
+export function feedPet(petId) {
+  return callCloudFunction('relationship', {
+    action: 'feedPet',
+    data: { petId },
+  });
+}
+
+export function interactPet(petId, interactionType) {
+  return callCloudFunction('relationship', {
+    action: 'interactPet',
+    data: { petId, interactionType },
+  });
+}
+
+export function changePetSkin(petId) {
+  return callCloudFunction('relationship', {
+    action: 'changePetSkin',
+    data: { petId },
+  });
+}
+
+export function saveReminderSettings(settings) {
+  return callCloudFunction('relationship', {
+    action: 'saveReminderSettings',
+    data: settings,
+  });
+}
+
+export function fetchDiaryData(month) {
+  return callCloudFunction('relationship', {
+    action: 'getDiaryData',
+    data: { month },
+  });
 }
 
 export function saveSpaceProfile(profile) {

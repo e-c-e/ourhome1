@@ -1,6 +1,6 @@
 <warm-navbar title="我们的空间" left-arrow bind:left-click="goBack"></warm-navbar>
 
-<view class="space-page">
+<view class="space-page warm-fade-page">
   <warm-status-card wx:if="{{loading}}" title="🌸 正在装饰你们的空间" desc="把名字、介绍和统计慢慢摆放好。"></warm-status-card>
 
   <warm-status-card wx:elif="{{errorMessage}}" error="{{true}}" title="💭 加载失败" desc="{{errorMessage}}"></warm-status-card>
@@ -44,5 +44,8 @@
     <view class="panel__desc">当前版本已经接入云开发数据库，清空后会同步删除云端回忆、纪念日、心愿和上传图片。</view>
     <warm-button theme="danger" variant="outline" size="large" bind:action="clearAllData">清空云端数据</warm-button>
   </view>
+
+  <view class="warm-page-end"></view>
+
   </block>
 </view>

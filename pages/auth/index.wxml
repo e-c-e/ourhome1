@@ -1,10 +1,26 @@
-<view class="auth-page">
+<view class="auth-page warm-fade-page">
   <view class="auth-card">
     <view class="auth-card__eyebrow">我们的空间</view>
     <view class="auth-card__title">{{title}}</view>
     <view class="auth-card__desc">{{desc}}</view>
 
-    <view wx:if="{{status === 'loading'}}" class="auth-card__status">正在校验白名单与云端数据...</view>
+    <view wx:if="{{status === 'loading'}}" class="auth-card__status">
+      <view class="auth-card__status-text">{{loadingHint}}</view>
+      <view class="auth-card__status-sub">{{loadingCountText}}</view>
+      <view class="auth-progress">
+        <view class="auth-progress__track">
+          <view class="auth-progress__value" style="width: {{loadingProgress}}%;"></view>
+        </view>
+        <view class="auth-progress__percent">{{loadingProgress}}%</view>
+      </view>
+    </view>
+
+    <view wx:if="{{status === 'loading'}}" class="auth-steps">
+      <view wx:for="{{loadingSteps}}" wx:key="label" class="auth-step auth-step--{{item.status}}">
+        <view class="auth-step__dot"></view>
+        <view class="auth-step__label">{{item.label}}</view>
+      </view>
+    </view>
 
     <view wx:if="{{status === 'denied'}}" class="auth-card__tips">
       当前版本会自动允许前两位进入空间的用户完成绑定，后续账号需要在 `users` 集合中已存在才可进入。
@@ -14,6 +30,14 @@
       请确认已经在微信开发者工具中开通云开发，并部署 `auth` 与 `relationship` 两个云函数。
     </view>
 
-    <button wx:if="{{status !== 'loading'}}" class="auth-card__button" bindtap="retryAuth">重新验证</button>
+    <view wx:if="{{status === 'success'}}" class="auth-success-stamp">
+      <view class="auth-success-stamp__seal">验证通过</view>
+      <view class="auth-success-stamp__sub">SPACE VERIFIED</view>
+    </view>
+
+    <button wx:if="{{status === 'denied' || status === 'error'}}" class="auth-card__button" bindtap="retryAuth">重新验证</button>
   </view>
+
+  <view class="warm-page-end"></view>
+
 </view>

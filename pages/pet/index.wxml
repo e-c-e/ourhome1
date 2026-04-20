@@ -1,16 +1,40 @@
 <warm-navbar title="宠物岛"></warm-navbar>
 
-<view class="pet-page">
+<view class="pet-page warm-fade-page">
+  <view class="pet-bg" aria-hidden="true">
+    <view class="pet-bg__veil"></view>
+    <view class="pet-bg__glow pet-bg__glow--top"></view>
+    <view class="pet-bg__cloud pet-bg__cloud--left"></view>
+    <view class="pet-bg__cloud pet-bg__cloud--right"></view>
+    <text class="pet-bg__paw pet-bg__paw--one">🐾</text>
+    <text class="pet-bg__paw pet-bg__paw--two">🐾</text>
+    <view class="pet-bg__side pet-bg__side--left">
+      <text class="pet-bg__sticker pet-bg__sticker--star">✦</text>
+      <text class="pet-bg__sticker pet-bg__sticker--bone">🦴</text>
+    </view>
+    <view class="pet-bg__side pet-bg__side--right">
+      <text class="pet-bg__sticker pet-bg__sticker--spark">✧</text>
+      <text class="pet-bg__sticker pet-bg__sticker--cookie">🍪</text>
+    </view>
+    <view class="pet-bg__bottom">
+      <text class="pet-bg__bottom-item pet-bg__bottom-item--cloud-left">☁</text>
+      <text class="pet-bg__bottom-item pet-bg__bottom-item--cloud-right">☁</text>
+      <text class="pet-bg__bottom-item pet-bg__bottom-item--island">◡̈</text>
+      <text class="pet-bg__bottom-item pet-bg__bottom-item--moon">☾</text>
+    </view>
+  </view>
+
+  <view class="pet-content">
   <warm-status-card wx:if="{{loading}}" title="🐾 正在唤醒宠物岛" desc="先把你们的空间信息和互动数据准备好。"></warm-status-card>
 
   <warm-status-card wx:elif="{{errorMessage}}" error="{{true}}" title="💭 加载失败" desc="{{errorMessage}}"></warm-status-card>
 
   <block wx:else>
     <view class="hero-card">
-      <view class="hero-card__eyebrow">🐾 宠物岛开发中</view>
-      <view class="hero-card__title">{{profile.partnerA}} 和 {{profile.partnerB}} 的小岛正在搭建</view>
-      <view class="hero-card__desc">当前先保留温馨占位，后续会接入投喂、亲密度和成长状态。</view>
-      <view class="hero-card__badge">❤️ 回忆越多，小岛会越热闹</view>
+      <view class="hero-card__eyebrow">🐾 宠物岛</view>
+      <view class="hero-card__title">{{profile.partnerA}} 和 {{profile.partnerB}} 的小岛已经亮灯啦</view>
+      <view class="hero-card__desc">现在可以照顾两只宠物、提升亲密度、切换皮肤，也能看到整座小岛的成长等级。</view>
+      <view class="hero-card__badge">❤️ 当前岛屿等级 Lv.{{islandLevel}}</view>
     </view>
 
     <view class="stats-grid">
@@ -29,9 +53,54 @@
     </view>
 
     <view class="panel">
-      <view class="panel__title">🌷 当前进度</view>
-      <view class="panel__desc">宠物岛页面已放入底部导航，后续可以在这里继续接入两只宠物、投喂和亲密度成长。</view>
+      <view class="panel__title">🌷 宠物伙伴</view>
+      <view class="panel__desc">回忆、纪念日和心愿都会慢慢变成小岛的能量。先照顾好今天的两位住民吧。</view>
+
+      <view class="pet-list">
+        <view wx:for="{{pets}}" wx:key="id" class="pet-card pet-card--{{index % 2 === 0 ? 'pink' : 'blue'}}">
+          <view class="pet-card__head">
+            <view class="pet-card__avatar">{{item.skin.emoji || item.avatar}}</view>
+            <view class="pet-card__meta">
+              <view class="pet-card__name">{{item.name}} · Lv.{{item.level}}</view>
+              <view class="pet-card__desc">{{item.skin.name}} · {{item.stageLabel}}</view>
+            </view>
+          </view>
+
+          <view class="pet-card__mood">{{item.mood}}</view>
+
+          <view class="pet-progress">
+            <view class="pet-progress__row">
+              <text class="pet-progress__label">亲密度</text>
+              <text class="pet-progress__value">{{item.progressPercent}}% · {{item.intimacy}} / {{item.nextLevelIntimacy}}</text>
+            </view>
+            <view class="pet-progress__track">
+              <view class="pet-progress__fill" style="width: {{item.progressPercent}}%;"></view>
+            </view>
+          </view>
+
+          <view class="pet-progress pet-progress--satiety">
+            <view class="pet-progress__row">
+              <text class="pet-progress__label">饱腹值</text>
+              <text class="pet-progress__value">{{item.satiety}}%</text>
+            </view>
+            <view class="pet-progress__track">
+              <view class="pet-progress__fill pet-progress__fill--satiety" style="width: {{item.satiety}}%;"></view>
+            </view>
+          </view>
+
+          <view class="pet-card__actions">
+            <view class="pet-action pet-action--primary" data-id="{{item.id}}" bindtap="handleFeedPet">🍪 投喂</view>
+            <view class="pet-action pet-action--light" data-id="{{item.id}}" bindtap="handleInteractPet">🫶 贴贴</view>
+            <view class="pet-action pet-action--light" data-id="{{item.id}}" bindtap="handleChangeSkin">✨ 换皮肤</view>
+          </view>
+        </view>
+      </view>
+
       <warm-button theme="primary" size="large" bind:action="goSpaceSettings">❤️ 打开空间设置</warm-button>
     </view>
+
+    <view class="warm-page-end"></view>
+
   </block>
+  </view>
 </view>

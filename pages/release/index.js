@@ -2,20 +2,22 @@ import { createMoment } from '../../api/relationship';
 import { STORAGE_KEYS, formatDate } from '../../utils/couple';
 import { ensureAuthorizedPage } from '../../utils/pageAuth';
 
-const MOODS = ['开心', '想你', '纪念', '旅行', '日常', '惊喜'];
+const MOODS = ['开心', '想你', '纪念', '旅行', '日常', '惊喜', '难过', '委屈', '焦虑', '疲惫', '生气', '失落', '自定义'];
 
 Page({
   data: {
     title: '',
     content: '',
     recordDate: formatDate(new Date()),
+    location: null,
     selectedMoodIndex: 0,
+    customMood: '',
     moods: MOODS,
     imageFiles: [],
     saving: false,
   },
 
-  async onLoad() {
+  async onLoad(options = {}) {
     const authResult = await ensureAuthorizedPage();
     if (!authResult) return;
 
@@ -25,8 +27,17 @@ Page({
         title: draft.title || '',
         content: draft.content || '',
         recordDate: draft.recordDate || formatDate(new Date()),
+        location: draft.location || null,
         selectedMoodIndex: draft.selectedMoodIndex || 0,
+        customMood: draft.customMood || '',
         imageFiles: draft.imageFiles || [],
+      });
+      return;
+    }
+
+    if (options.date) {
+      this.setData({
+        recordDate: options.date,
       });
     }
   },
@@ -46,6 +57,35 @@ Page({
   handleDateChange(e) {
     this.setData({
       recordDate: e.detail.value,
+    });
+  },
+
+  chooseLocation() {
+    wx.chooseLocation({
+      success: (result) => {
+        this.setData({
+          location: {
+            name: result.name || result.address || '已选择地点',
+            address: result.address || '',
+            latitude: result.latitude || 0,
+            longitude: result.longitude || 0,
+          },
+        });
+      },
+      fail: (error) => {
+        if ((error.errMsg || '').includes('cancel')) return;
+
+        wx.showToast({
+          title: '地点选择失败，请检查定位权限',
+          icon: 'none',
+        });
+      },
+    });
+  },
+
+  clearLocation() {
+    this.setData({
+      location: null,
     });
   },
 
@@ -91,6 +131,12 @@ Page({
     });
   },
 
+  handleCustomMoodInput(e) {
+    this.setData({
+      customMood: e.detail.value,
+    });
+  },
+
   saveDraft() {
     const draft = this.buildMomentPayload();
     wx.setStorageSync(STORAGE_KEYS.DRAFT, draft);
@@ -102,6 +148,7 @@ Page({
 
   publishMoment() {
     const content = this.data.content.trim();
+    const mood = this.getSelectedMood();
     if (!content && !this.data.imageFiles.length) {
       wx.showToast({
         title: '至少写点文字或选一张照片',
@@ -110,8 +157,22 @@ Page({
       return;
     }
 
+    if (!mood) {
+      wx.showToast({
+        title: '请先填写自定义心情',
+        icon: 'none',
+      });
+      return;
+    }
+
 
     this.submitMoment();
+  },
+
+  getSelectedMood() {
+    const mood = this.data.moods[this.data.selectedMoodIndex] || '日常';
+    if (mood !== '自定义') return mood;
+    return this.data.customMood.trim();
   },
 
   async submitMoment() {
@@ -146,15 +207,18 @@ Page({
   },
 
   buildMomentPayload() {
-    const mood = this.data.moods[this.data.selectedMoodIndex] || '日常';
+    const mood = this.getSelectedMood() || '日常';
 
     return {
       title: this.data.title.trim() || '今天的记录',
       content: this.data.content.trim(),
       date: this.data.recordDate,
       mood,
+      customMood: this.data.customMood.trim(),
+      location: this.data.location,
       images: this.data.imageFiles.map((item) => item.url),
       imageFiles: this.data.imageFiles,
+      selectedMoodIndex: this.data.selectedMoodIndex,
     };
   },
 });

@@ -32,6 +32,34 @@ navigator {
   padding: 24rpx;
 }
 
+.warm-fade-page {
+  position: relative;
+  padding-bottom: 188rpx !important;
+  padding-bottom: calc(188rpx + constant(safe-area-inset-bottom)) !important;
+  padding-bottom: calc(188rpx + env(safe-area-inset-bottom)) !important;
+}
+
+.warm-fade-page::after {
+  display: none;
+}
+
+.warm-page-end {
+  display: block;
+  margin-top: 24rpx;
+  height: 96rpx;
+  height: calc(96rpx + constant(safe-area-inset-bottom));
+  height: calc(96rpx + env(safe-area-inset-bottom));
+  border-radius: 24rpx;
+  background: transparent;
+  box-shadow: none;
+}
+
+.warm-page-end__icon,
+.warm-page-end__title,
+.warm-page-end__desc {
+  display: none;
+}
+
 .warm-card {
   border-radius: 32rpx;
   background: rgba(255, 255, 255, 0.94);

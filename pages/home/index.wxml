@@ -1,6 +1,30 @@
 <warm-navbar title="我们的空间"></warm-navbar>
 
-<view class="home-page">
+<view class="home-page warm-fade-page">
+  <view class="home-bg" aria-hidden="true">
+    <view class="home-bg__veil"></view>
+    <view class="home-bg__glow home-bg__glow--top"></view>
+    <view class="home-bg__cloud home-bg__cloud--left"></view>
+    <view class="home-bg__cloud home-bg__cloud--right"></view>
+    <text class="home-bg__heart home-bg__heart--one">❤</text>
+    <text class="home-bg__heart home-bg__heart--two">❤</text>
+    <view class="home-bg__side home-bg__side--left">
+      <text class="home-bg__sticker home-bg__sticker--bow">🎀</text>
+      <text class="home-bg__sticker home-bg__sticker--spark">✦</text>
+    </view>
+    <view class="home-bg__side home-bg__side--right">
+      <text class="home-bg__sticker home-bg__sticker--flower">❀</text>
+      <text class="home-bg__sticker home-bg__sticker--ribbon">⌒❤⌒</text>
+    </view>
+    <view class="home-bg__bottom">
+      <text class="home-bg__bottom-item home-bg__bottom-item--moon">☾</text>
+      <text class="home-bg__bottom-item home-bg__bottom-item--cloud-left">☁</text>
+      <text class="home-bg__bottom-item home-bg__bottom-item--cloud-right">☁</text>
+      <text class="home-bg__bottom-item home-bg__bottom-item--star">✧</text>
+    </view>
+  </view>
+
+  <view class="home-content">
   <view class="hero-card">
     <view class="hero-card__eyebrow">❤️ 只属于我们的空间</view>
     <view class="hero-card__title">把日常慢慢写成回忆</view>
@@ -11,14 +35,17 @@
 
     <view class="hero-stats">
       <view class="stat-box">
+        <text class="stat-box__icon">💞</text>
         <text class="stat-box__value">{{relationshipDays}}</text>
         <text class="stat-box__label">❤️ 在一起天数</text>
       </view>
       <view class="stat-box">
+        <text class="stat-box__icon">📸</text>
         <text class="stat-box__value">{{momentCount}}</text>
         <text class="stat-box__label">🌸 回忆条数</text>
       </view>
       <view class="stat-box">
+        <text class="stat-box__icon">✨</text>
         <text class="stat-box__value">{{latestMood}}</text>
         <text class="stat-box__label">🐾 最近心情</text>
       </view>
@@ -28,14 +55,7 @@
       <view class="hero-actions__item">
         <warm-button theme="primary" size="large" block="{{true}}" bind:action="goRelease">❤️ 记录今天</warm-button>
       </view>
-      <view class="hero-actions__item hero-actions__picker">
-        <warm-button theme="light" size="large" block="{{true}}">🌸 {{relationshipActionLabel}}</warm-button>
-        <picker class="hero-actions__picker-native" mode="date" value="{{pickerDateValue}}" bindchange="handleStartDateChange">
-          <view class="hero-actions__picker-hit"></view>
-        </picker>
-      </view>
     </view>
-    <view class="hero-card__date">{{relationshipDateLabel}}</view>
   </view>
 
   <warm-empty-state wx:if="{{loading}}" customClass="home-empty home-empty--soft" title="🌷 正在整理回忆..." desc="等一下，就把属于你们的内容放出来。"></warm-empty-state>
@@ -43,7 +63,7 @@
   <warm-empty-state wx:elif="{{errorMessage}}" customClass="home-empty home-empty--soft" title="💭 加载失败" desc="{{errorMessage}}"></warm-empty-state>
 
   <block wx:elif="{{recentMoments.length}}">
-    <view class="section-panel">
+    <view class="section-panel section-panel--memory-list">
       <view class="section-head">
         <text class="section-head__title">🌸 最近回忆</text>
         <text class="section-head__sub">共 {{recentMoments.length}} 条</text>
@@ -74,22 +94,22 @@
             </view>
             <view class="memory-entry__title">{{item.title}}</view>
             <view class="memory-entry__text">{{item.content}}</view>
+            <view wx:if="{{item.locationText}}" class="memory-entry__footer">
+              <text class="memory-entry__location">📍 {{item.locationText}}</text>
+            </view>
           </view>
         </view>
       </view>
     </view>
 
-    <view class="section-panel section-panel--pet">
-      <view class="section-head section-head--single">
-        <text class="section-head__title">🐾 宠物岛动态</text>
-      </view>
-      <view class="pet-tip">{{petIslandHint}}</view>
-    </view>
+    <view class="warm-page-end"></view>
   </block>
 
-  <warm-empty-state wx:else customClass="home-empty" imageSrc="/static/home/swiper0.png" title="💕 还没有记录" desc="点下方按钮，写下第一条属于你们的回忆。"></warm-empty-state>
-</view>
+  <block wx:else>
+    <warm-empty-state customClass="home-empty" imageSrc="/static/home/swiper0.png" title="💕 还没有记录" desc="点下方按钮，写下第一条属于你们的回忆。"></warm-empty-state>
+    <view class="warm-page-end"></view>
+  </block>
 
-<view class="home-release">
-  <warm-button theme="primary" size="large" shape="round" block="{{true}}" bind:action="goRelease">❤️ 记录今天</warm-button>
+
+  </view>
 </view>

@@ -6,6 +6,14 @@ Page({
   data: {
     wishText: '',
     wishes: [],
+    summary: {
+      total: 0,
+      completed: 0,
+      pending: 0,
+      completionRate: 0,
+    },
+    heroTip: '把喜欢的未来一件件存起来。',
+    nextWish: '',
     loading: true,
     errorMessage: '',
   },
@@ -21,12 +29,33 @@ Page({
 
     try {
       const { wishes = [] } = await fetchMemorialData();
-      this.setData({
-        wishes: wishes.map((item) => ({
+      const normalizedWishes = wishes
+        .map((item, index) => ({
           ...item,
           id: item._id,
-          completedLabel: item.isCompleted ? `完成于 ${item.completedTime}` : '点击左侧圆点可标记完成',
-        })),
+          order: index + 1,
+          isCompleted: Boolean(item.isCompleted),
+          completedLabel: item.isCompleted ? `完成于 ${item.completedTime}` : '点一下左侧圆点，就把它变成已经实现的小事。',
+          cardTag: item.isCompleted ? '已实现' : '待实现',
+        }))
+        .sort((left, right) => Number(left.isCompleted) - Number(right.isCompleted));
+      const completed = normalizedWishes.filter((item) => item.isCompleted).length;
+      const total = normalizedWishes.length;
+      const pending = total - completed;
+      const nextWish = normalizedWishes.find((item) => !item.isCompleted);
+
+      this.setData({
+        wishes: normalizedWishes,
+        summary: {
+          total,
+          completed,
+          pending,
+          completionRate: total ? Math.round((completed / total) * 100) : 0,
+        },
+        heroTip: completed
+          ? `已经一起实现 ${completed} 个小愿望啦，再去点亮下一个。`
+          : '从第一个小小心愿开始，把普通日子变得更值得期待。',
+        nextWish: nextWish ? nextWish.content : '',
         loading: false,
       });
     } catch (error) {
@@ -53,20 +82,49 @@ Page({
       return;
     }
 
-    await addWish(content);
-    this.setData({ wishText: '' });
-    await this.loadPageData();
+    try {
+      await addWish(content);
+      this.setData({ wishText: '' });
+      await this.loadPageData();
+      wx.showToast({
+        title: '心愿收好啦',
+        icon: 'success',
+      });
+    } catch (error) {
+      wx.showToast({
+        title: error.message || '新增失败',
+        icon: 'none',
+      });
+    }
   },
 
   async toggleWish(e) {
     const { id } = e.currentTarget.dataset;
-    await toggleWish(id, formatDate(new Date()));
-    await this.loadPageData();
+    try {
+      await toggleWish(id, formatDate(new Date()));
+      await this.loadPageData();
+    } catch (error) {
+      wx.showToast({
+        title: error.message || '更新失败',
+        icon: 'none',
+      });
+    }
   },
 
   async removeWish(e) {
     const { id } = e.currentTarget.dataset;
-    await removeWish(id);
-    await this.loadPageData();
+    try {
+      await removeWish(id);
+      await this.loadPageData();
+      wx.showToast({
+        title: '已经移出啦',
+        icon: 'none',
+      });
+    } catch (error) {
+      wx.showToast({
+        title: error.message || '移除失败',
+        icon: 'none',
+      });
+    }
   },
 });

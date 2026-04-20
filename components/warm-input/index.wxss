@@ -1,11 +1,23 @@
-.warm-input-shell {
+:host {
+  display: block;
   width: 100%;
+  max-width: 100%;
+}
+
+.warm-input-shell {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .warm-input {
+  display: block;
   width: 100%;
+  max-width: 100%;
   height: 88rpx;
   padding: 0 24rpx;
+  box-sizing: border-box;
   border-radius: 24rpx;
   background: #FFFDFC;
   box-shadow: inset 0 0 0 2rpx rgba(255, 182, 193, 0.14);

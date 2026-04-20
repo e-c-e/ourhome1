@@ -49,6 +49,7 @@ Page({
         date: item.date || this.data.today,
         mood: item.mood || '日常',
         previewImages: (item.images || []).slice(0, 3),
+        locationText: item.location && item.location.name ? item.location.name : '',
       }));
 
       const latestMoment = sortedMoments[0];

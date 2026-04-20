@@ -118,7 +118,12 @@
   margin-bottom: 24rpx;
 
   &--half {
-    width: calc(50% - 12rpx);
+    width: auto;
+    min-width: 0;
+  }
+
+  &--full {
+    grid-column: 1 / -1;
   }
 
   &__label {
@@ -141,13 +146,15 @@
 }
 
 .field-row {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 24rpx;
 }
 
 .picker-shell {
   position: relative;
+  width: 100%;
+  max-width: 100%;
 }
 
 .picker-shell__native {
@@ -166,13 +173,59 @@
 .picker-value {
   display: flex;
   align-items: center;
+  width: 100%;
+  max-width: 100%;
   min-height: 78rpx;
+}
+
+.location-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 100%;
+  min-height: 78rpx;
+  padding: 18rpx 20rpx;
+  border-radius: 24rpx;
+  background: #fff9f7;
+  box-shadow: inset 0 0 0 2rpx rgba(255, 182, 193, 0.16);
+
+  &--active {
+    background: linear-gradient(180deg, #fff5f7 0%, #fffdfc 100%);
+  }
+
+  &__text {
+    font-size: 26rpx;
+    line-height: 1.5;
+    color: #5c4b3a;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 18rpx;
+    margin-top: 12rpx;
+  }
+
+  &__action {
+    font-size: 24rpx;
+    color: #d56b78;
+
+    &--muted {
+      color: rgba(92, 75, 58, 0.56);
+    }
+  }
 }
 
 .mood-list {
   display: flex;
   flex-wrap: wrap;
+  width: 100%;
   gap: 14rpx;
+}
+
+.mood-custom-input {
+  width: 100%;
+  margin-top: 16rpx;
 }
 
 .mood-chip {
@@ -196,6 +249,8 @@
   left: 24rpx;
   right: 24rpx;
   bottom: 40rpx;
+  bottom: calc(40rpx + constant(safe-area-inset-bottom));
+  bottom: calc(40rpx + env(safe-area-inset-bottom));
 
   .t-button {
     flex: 1;

@@ -1,0 +1,80 @@
+<warm-navbar title="日历日记" left-arrow bind:left-click="goBack"></warm-navbar>
+
+<view class="diary-page warm-fade-page">
+  <warm-status-card wx:if="{{loading}}" title="📔 正在整理这个月的回忆" desc="把每一天的照片、文字和心情排成一本温柔日历。"></warm-status-card>
+
+  <warm-status-card wx:elif="{{errorMessage}}" error="{{true}}" title="💭 加载失败" desc="{{errorMessage}}"></warm-status-card>
+
+  <block wx:else>
+    <view class="diary-hero">
+      <view class="diary-hero__eyebrow">📅 {{month}}</view>
+      <view class="diary-hero__title">把日子翻成一本小日记</view>
+      <view class="diary-stats">
+        <view class="diary-stat">
+          <text class="diary-stat__value">{{summary.recordCount}}</text>
+          <text class="diary-stat__label">回忆条数</text>
+        </view>
+        <view class="diary-stat">
+          <text class="diary-stat__value">{{summary.activeDays}}</text>
+          <text class="diary-stat__label">有记录的天</text>
+        </view>
+        <view class="diary-stat">
+          <text class="diary-stat__value">{{summary.photoCount}}</text>
+          <text class="diary-stat__label">照片数量</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="calendar-panel">
+      <view class="calendar-toolbar">
+        <view class="calendar-toolbar__action" bindtap="prevMonth">‹ 上个月</view>
+        <view class="calendar-toolbar__title">{{month}}</view>
+        <view class="calendar-toolbar__action" bindtap="nextMonth">下个月 ›</view>
+      </view>
+
+      <view class="calendar-weekdays">
+        <text wx:for="{{weekLabels}}" wx:key="*this" class="calendar-weekdays__item">{{item}}</text>
+      </view>
+
+      <view class="calendar-grid">
+        <view wx:for="{{calendarWeeks}}" wx:key="index" class="calendar-row">
+          <view wx:for="{{item}}" wx:key="id" class="calendar-cell {{item.isBlank ? 'calendar-cell--blank' : ''}} {{item.isSelected ? 'calendar-cell--selected' : ''}} {{item.isToday ? 'calendar-cell--today' : ''}}" data-date="{{item.date}}" bindtap="selectDate">
+            <block wx:if="{{!item.isBlank}}">
+              <text class="calendar-cell__day">{{item.day}}</text>
+              <view wx:if="{{item.recordCount}}" class="calendar-cell__dot">{{item.recordCount}}</view>
+            </block>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="day-panel">
+      <view class="day-panel__head">
+        <view>
+          <view class="day-panel__title">{{selectedDate}}</view>
+          <view class="day-panel__desc">当天记录 {{dayMoments.length}} 条</view>
+        </view>
+        <warm-button theme="primary" size="large" bind:action="goRelease">❤️ 记录这一天</warm-button>
+      </view>
+
+      <view wx:if="{{dayMoments.length}}" class="day-list">
+        <view wx:for="{{dayMoments}}" wx:key="_id" class="day-card" data-id="{{item._id}}" bindtap="goMomentDetail">
+          <image wx:if="{{item.cover}}" class="day-card__cover" src="{{item.cover}}" mode="aspectFill"></image>
+          <view class="day-card__body">
+            <view class="day-card__meta">
+              <text class="day-card__mood">💗 {{item.mood}}</text>
+              <text class="day-card__count">{{item.imageCount}} 张图 · {{item.commentCount}} 评论</text>
+            </view>
+            <view class="day-card__title">{{item.title}}</view>
+            <view class="day-card__desc">{{item.content}}</view>
+          </view>
+        </view>
+      </view>
+      <warm-empty-state wx:else customClass="day-empty" title="✨ 这一天还没有记录" desc="点上方按钮，把这一整天的情绪和小瞬间写下来。"></warm-empty-state>
+    </view>
+
+    <view class="warm-page-end"></view>
+
+
+  </block>
+</view>

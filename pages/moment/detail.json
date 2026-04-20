@@ -3,6 +3,7 @@
   "usingComponents": {
     "warm-navbar": "/components/warm-navbar",
     "warm-button": "/components/warm-button",
+    "warm-input": "/components/warm-input",
     "warm-status-card": "/components/warm-status-card",
     "warm-empty-state": "/components/warm-empty-state"
   }

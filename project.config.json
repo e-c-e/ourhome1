@@ -72,12 +72,6 @@
           "scene": null
         },
         {
-          "name": "message",
-          "pathName": "pages/message/index",
-          "query": "",
-          "scene": null
-        },
-        {
           "name": "my",
           "pathName": "pages/my/index",
           "query": "",

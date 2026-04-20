@@ -1,40 +1,125 @@
 <warm-navbar title="心愿单"></warm-navbar>
 
-<view class="wish-page">
+<view class="wish-page warm-fade-page">
+  <view class="wish-bg" aria-hidden="true">
+    <view class="wish-bg__veil"></view>
+    <view class="wish-bg__glow wish-bg__glow--top"></view>
+    <view class="wish-bg__glow wish-bg__glow--bottom"></view>
+    <view class="wish-bg__side wish-bg__side--left">
+      <text class="wish-bg__float wish-bg__float--left-bow">🎀</text>
+      <text class="wish-bg__float wish-bg__float--left-star">✦</text>
+      <text class="wish-bg__float wish-bg__float--left-heart">❤</text>
+    </view>
+    <view class="wish-bg__side wish-bg__side--right">
+      <text class="wish-bg__float wish-bg__float--right-flower">❀</text>
+      <text class="wish-bg__float wish-bg__float--right-spark">✧</text>
+      <text class="wish-bg__float wish-bg__float--right-ribbon">⌒❤⌒</text>
+    </view>
+    <view class="wish-bg__bottom">
+      <text class="wish-bg__bottom-item wish-bg__bottom-item--moon">☾</text>
+      <text class="wish-bg__bottom-item wish-bg__bottom-item--garland">✦ ･ﾟ* ✧ ･ﾟ* ✦</text>
+      <text class="wish-bg__bottom-item wish-bg__bottom-item--envelope-left">✉</text>
+      <text class="wish-bg__bottom-item wish-bg__bottom-item--envelope-right">✉</text>
+      <text class="wish-bg__bottom-item wish-bg__bottom-item--cloud-left">☁</text>
+      <text class="wish-bg__bottom-item wish-bg__bottom-item--cloud-right">☁</text>
+      <text class="wish-bg__bottom-item wish-bg__bottom-item--star">✧</text>
+    </view>
+  </view>
+
+  <view class="wish-content">
   <warm-status-card wx:if="{{loading}}" title="🌸 正在整理心愿" desc="把想一起完成的小事和大事慢慢排出来。"></warm-status-card>
 
   <warm-status-card wx:elif="{{errorMessage}}" error="{{true}}" title="💭 加载失败" desc="{{errorMessage}}"></warm-status-card>
 
   <block wx:else>
-    <view class="panel">
-      <view class="panel__title">✨ 写下新的心愿</view>
-      <view class="panel__desc">把想一起去、想一起做、想一起完成的小事都记下来。</view>
-      <warm-input
-        customClass="field-input"
-        value="{{wishText}}"
-        placeholder="例如：一起去看海"
-        maxlength="40"
-        bind:input="handleWishInput"
-      ></warm-input>
-      <warm-button theme="primary" size="large" bind:action="addWish">❤️ 新增心愿</warm-button>
+    <view class="hero-card">
+      <view class="hero-card__eyebrow">✨ 愿望收藏夹</view>
+      <view class="hero-card__title">把想一起完成的未来，轻轻放进这里</view>
+      <view class="hero-card__desc">{{heroTip}}</view>
+      <view class="hero-card__badge" wx:if="{{nextWish}}">💌 下一个想完成：{{nextWish}}</view>
+
+      <view class="hero-stats">
+        <view class="stat-box">
+          <text class="stat-box__icon">🌷</text>
+          <text class="stat-box__value">{{summary.total}}</text>
+          <text class="stat-box__label">心愿总数</text>
+        </view>
+        <view class="stat-box">
+          <text class="stat-box__icon">🫧</text>
+          <text class="stat-box__value">{{summary.pending}}</text>
+          <text class="stat-box__label">正在期待</text>
+        </view>
+        <view class="stat-box">
+          <text class="stat-box__icon">🌙</text>
+          <text class="stat-box__value">{{summary.completionRate}}%</text>
+          <text class="stat-box__label">点亮进度</text>
+        </view>
+      </view>
     </view>
 
-    <view class="panel">
-      <view class="panel__title">🌷 心愿列表</view>
+    <view class="panel panel--editor">
+      <view class="panel__head">
+        <view>
+          <view class="panel__title">💗 写下新的心愿</view>
+          <view class="panel__desc">可以是看海、旅行、做一顿饭，或者只是想和对方一起度过的普通傍晚。</view>
+        </view>
+        <view class="panel__pill">{{summary.pending}} 件待实现</view>
+      </view>
+
+      <view class="editor-shell">
+        <warm-input
+          customClass="field-input"
+          value="{{wishText}}"
+          placeholder="例如：一起去吹海风看日落"
+          maxlength="40"
+          bind:input="handleWishInput"
+        ></warm-input>
+        <warm-button theme="primary" size="large" bind:action="addWish">❤️ 新增心愿</warm-button>
+      </view>
+    </view>
+
+    <view class="panel panel--list">
+      <view class="panel__head panel__head--stack">
+        <view>
+          <view class="panel__title">🌷 心愿列表</view>
+          <view class="panel__desc">先把还没实现的小期待放在前面，完成过的也会继续留在这里。</view>
+        </view>
+        <view class="summary-strip">
+          <view class="summary-strip__item">
+            <text class="summary-strip__value">{{summary.completed}}</text>
+            <text class="summary-strip__label">已实现</text>
+          </view>
+          <view class="summary-strip__item">
+            <text class="summary-strip__value">{{summary.pending}}</text>
+            <text class="summary-strip__label">待实现</text>
+          </view>
+        </view>
+      </view>
+
       <view wx:if="{{wishes.length}}" class="list-block">
-        <view wx:for="{{wishes}}" wx:key="id" class="list-item">
-          <view class="wish-meta" data-id="{{item.id}}" bindtap="toggleWish">
+        <view wx:for="{{wishes}}" wx:key="id" class="list-item {{item.isCompleted ? 'list-item--done' : ''}}">
+          <view class="list-item__main" data-id="{{item.id}}" bindtap="toggleWish">
             <view class="wish-dot {{item.isCompleted ? 'wish-dot--done' : ''}}"></view>
-            <view>
+            <view class="wish-meta">
+              <view class="list-item__topline">
+                <text class="list-item__tag {{item.isCompleted ? 'list-item__tag--done' : ''}}">{{item.cardTag}}</text>
+                <text class="list-item__order">No.{{item.order}}</text>
+              </view>
               <view class="list-item__title {{item.isCompleted ? 'is-done' : ''}}">{{item.content}}</view>
               <view class="list-item__desc">{{item.completedLabel}}</view>
             </view>
           </view>
-          <text class="list-item__action" data-id="{{item.id}}" bindtap="removeWish">移除</text>
+          <view class="list-item__side">
+            <text class="list-item__hint">{{item.isCompleted ? '继续收藏' : '点圆点完成'}}</text>
+            <text class="list-item__action" data-id="{{item.id}}" bindtap="removeWish">移除</text>
+          </view>
         </view>
       </view>
 
       <warm-empty-state wx:else customClass="list-empty" title="✨ 还没有心愿" desc="先写下第一个想一起完成的小目标。"></warm-empty-state>
     </view>
+
+    <view class="warm-page-end"></view>
   </block>
+</view>
 </view>
