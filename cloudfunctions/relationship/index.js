@@ -217,6 +217,54 @@ function normalizeMomentRecord(item = {}, user) {
   };
 }
 
+async function resolveCloudFileUrls(fileList = []) {
+  const normalized = Array.isArray(fileList) ? fileList.filter(Boolean) : [];
+  const cloudFileIds = normalized.filter((item) => typeof item === 'string' && item.startsWith('cloud://'));
+
+  if (!cloudFileIds.length) {
+    return normalized;
+  }
+
+  const tempUrlMap = {};
+  for (let index = 0; index < cloudFileIds.length; index += 50) {
+    const batch = cloudFileIds.slice(index, index + 50);
+    try {
+      const result = await cloud.getTempFileURL({
+        fileList: batch,
+      });
+      const tempFiles = (result && result.fileList) || [];
+      tempFiles.forEach((item) => {
+        if (item.fileID && item.tempFileURL) {
+          tempUrlMap[item.fileID] = item.tempFileURL;
+        }
+      });
+    } catch (error) {
+      return normalized;
+    }
+  }
+
+  return normalized.map((item) => tempUrlMap[item] || item);
+}
+
+async function prepareMomentForClient(item = {}, user) {
+  const record = normalizeMomentRecord(item, user);
+  const images = Array.isArray(record.images) ? record.images : [];
+  const shouldResolveCover = record.cover && !images.includes(record.cover);
+  const sourceList = shouldResolveCover ? images.concat(record.cover) : images;
+  const resolvedList = await resolveCloudFileUrls(sourceList);
+  const resolvedImages = resolvedList.slice(0, images.length);
+  const resolvedCover = shouldResolveCover
+    ? (resolvedList[resolvedList.length - 1] || record.cover || resolvedImages[0] || '')
+    : (resolvedImages[images.indexOf(record.cover)] || record.cover || resolvedImages[0] || '');
+
+  return {
+    ...record,
+    images: resolvedImages,
+    cover: resolvedCover,
+    previewImages: resolvedImages.slice(0, 3),
+  };
+}
+
 function calculateIslandLevel(pets = []) {
   if (!pets.length) return 1;
   const totalLevels = pets.reduce((sum, item) => sum + (item.level || 1), 0);
@@ -329,7 +377,7 @@ async function getHomeData() {
   const moments = await safeList(MOMENTS_COLLECTION, { orderField: 'createdAt', orderDirection: 'desc', limit: 100 });
   return {
     space,
-    moments: moments.map((item) => normalizeMomentRecord(item, user)),
+    moments: await Promise.all(moments.map((item) => prepareMomentForClient(item, user))),
   };
 }
 
@@ -351,16 +399,16 @@ async function createMoment(data, user) {
   };
 
   const createResult = await db.collection(MOMENTS_COLLECTION).add({ data: moment });
-  return {
+  return prepareMomentForClient({
     ...moment,
     _id: createResult._id,
-  };
+  }, user);
 }
 
 async function getMomentDetail(id, user) {
   const { data } = await db.collection(MOMENTS_COLLECTION).doc(id).get();
   return {
-    moment: normalizeMomentRecord(data, user),
+    moment: await prepareMomentForClient(data, user),
   };
 }
 
@@ -603,7 +651,7 @@ async function getDiaryData(month) {
     data = [];
   }
 
-  const moments = data.map((item) => normalizeMomentRecord(item, user));
+  const moments = await Promise.all(data.map((item) => prepareMomentForClient(item, user)));
   const activeDayMap = {};
   let photoCount = 0;
 

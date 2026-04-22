@@ -107,7 +107,7 @@
       <view wx:if="{{anniversaries.length}}" class="list-block">
         <view class="panel__sub">💕 已记录的重要日子</view>
         <view wx:for="{{anniversaries}}" wx:key="id" class="list-item">
-          <view>
+          <view class="list-item__main">
             <view class="list-item__title">{{item.name}}</view>
             <view class="list-item__desc">{{item.date}} · {{item.diffLabel}}</view>
             <view class="anniversary-progress">

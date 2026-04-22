@@ -1,8 +1,6 @@
 import { fetchDiaryData, fetchHomeData, toggleMomentLike } from '../../api/relationship';
 import { formatDate } from '../../utils/couple';
 import { ensureAuthorizedPage } from '../../utils/pageAuth';
-
-const DEFAULT_COVER = '/static/home/card0.png';
 const WEEK_LABELS = ['日', '一', '二', '三', '四', '五', '六'];
 
 function formatMonthValue(date = new Date()) {
@@ -125,7 +123,7 @@ Page({
           content: item.content || '写下了一段新的回忆。',
           mood: item.mood || '日常',
           date: item.date || '',
-          cover: item.cover || DEFAULT_COVER,
+          cover: item.cover || '',
           previewImages: (item.images || []).slice(0, 3),
           images: item.images || [],
           imageCount: item.imageCount || (item.images || []).length,

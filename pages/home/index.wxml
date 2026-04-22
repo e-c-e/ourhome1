@@ -70,7 +70,7 @@
       </view>
 
       <view class="memory-feed">
-        <view wx:for="{{recentMoments}}" wx:key="id" class="memory-entry" data-id="{{item.id}}" bindtap="goMomentDetail">
+        <view wx:for="{{recentMoments}}" wx:key="id" class="memory-entry {{!item.previewImages.length && !item.cover ? 'memory-entry--text-only' : ''}}" data-id="{{item.id}}" bindtap="goMomentDetail">
           <view class="memory-entry__gallery" wx:if="{{item.previewImages.length}}">
             <image
               wx:for="{{item.previewImages}}"
@@ -83,8 +83,16 @@
               catchtap="previewMomentImages"
             />
           </view>
-          <view wx:else class="memory-entry__cover-wrap">
+          <view wx:elif="{{item.cover}}" class="memory-entry__cover-wrap">
             <image class="memory-entry__cover" src="{{item.cover}}" mode="aspectFill" />
+          </view>
+          <view wx:else class="memory-entry__placeholder">
+            <view class="memory-entry__placeholder-row">
+              <text class="memory-entry__placeholder-icon">💌</text>
+              <text class="memory-entry__placeholder-icon memory-entry__placeholder-icon--soft">✿</text>
+            </view>
+            <view class="memory-entry__placeholder-title">这是一条只用文字写下的回忆</view>
+            <view class="memory-entry__placeholder-desc">没有照片也没关系，心动的小瞬间本来就值得被记住。</view>
           </view>
 
           <view class="memory-entry__body">
@@ -106,7 +114,7 @@
   </block>
 
   <block wx:else>
-    <warm-empty-state customClass="home-empty" imageSrc="/static/home/swiper0.png" title="💕 还没有记录" desc="点下方按钮，写下第一条属于你们的回忆。"></warm-empty-state>
+    <warm-empty-state customClass="home-empty" title="💕 还没有记录" desc="点下方按钮，写下第一条属于你们的回忆。"></warm-empty-state>
     <view class="warm-page-end"></view>
   </block>
 

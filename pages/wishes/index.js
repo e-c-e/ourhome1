@@ -2,6 +2,8 @@ import { addWish, fetchMemorialData, removeWish, toggleWish } from '../../api/re
 import { formatDate } from '../../utils/couple';
 import { ensureAuthorizedPage } from '../../utils/pageAuth';
 
+const FLOWER_EMOJIS = ['🌸', '🌷', '🌼', '🌺', '🌻', '💮'];
+
 Page({
   data: {
     wishText: '',
@@ -12,7 +14,8 @@ Page({
       pending: 0,
       completionRate: 0,
     },
-    heroTip: '把喜欢的未来一件件存起来。',
+    heroTip: '把喜欢的未来一件件种进来，等着一起去实现。',
+    progressText: '花园还在等待第一朵花盛开 🌱',
     nextWish: '',
     loading: true,
     errorMessage: '',
@@ -35,10 +38,25 @@ Page({
           id: item._id,
           order: index + 1,
           isCompleted: Boolean(item.isCompleted),
-          completedLabel: item.isCompleted ? `完成于 ${item.completedTime}` : '点一下左侧圆点，就把它变成已经实现的小事。',
-          cardTag: item.isCompleted ? '已实现' : '待实现',
+          flowerEmoji: FLOWER_EMOJIS[index % FLOWER_EMOJIS.length],
+          potStyle: (index % 3) + 1,
+          gardenLane: (index % 3) + 1,
+          gardenHeight: (index % 2) + 1,
+          isFirstBloom: false,
         }))
         .sort((left, right) => Number(left.isCompleted) - Number(right.isCompleted));
+
+      // Mark the earliest completed wish as the first-ever bloom (easter egg)
+      const completedWishes = normalizedWishes.filter((w) => w.isCompleted);
+      if (completedWishes.length > 0) {
+        const firstBloom = completedWishes.reduce((a, b) =>
+          (a.completedTime || '') <= (b.completedTime || '') ? a : b,
+        );
+        normalizedWishes.forEach((w) => {
+          if (w.id === firstBloom.id) w.isFirstBloom = true;
+        });
+      }
+
       const completed = normalizedWishes.filter((item) => item.isCompleted).length;
       const total = normalizedWishes.length;
       const pending = total - completed;
@@ -55,6 +73,9 @@ Page({
         heroTip: completed
           ? `已经一起实现 ${completed} 个小愿望啦，再去点亮下一个。`
           : '从第一个小小心愿开始，把普通日子变得更值得期待。',
+        progressText: completed > 0
+          ? `花园里有 ${completed} 朵盛开的小花啦 🌸`
+          : '花园还在等待第一朵花盛开 🌱',
         nextWish: nextWish ? nextWish.content : '',
         loading: false,
       });
@@ -67,18 +88,13 @@ Page({
   },
 
   handleWishInput(e) {
-    this.setData({
-      wishText: e.detail.value,
-    });
+    this.setData({ wishText: e.detail.value });
   },
 
   async addWish() {
     const content = this.data.wishText.trim();
     if (!content) {
-      wx.showToast({
-        title: '先写一个心愿',
-        icon: 'none',
-      });
+      wx.showToast({ title: '先写一个心愿', icon: 'none' });
       return;
     }
 
@@ -86,15 +102,9 @@ Page({
       await addWish(content);
       this.setData({ wishText: '' });
       await this.loadPageData();
-      wx.showToast({
-        title: '心愿收好啦',
-        icon: 'success',
-      });
+      wx.showToast({ title: '心愿种下啦 🌱', icon: 'none' });
     } catch (error) {
-      wx.showToast({
-        title: error.message || '新增失败',
-        icon: 'none',
-      });
+      wx.showToast({ title: error.message || '新增失败', icon: 'none' });
     }
   },
 
@@ -104,10 +114,7 @@ Page({
       await toggleWish(id, formatDate(new Date()));
       await this.loadPageData();
     } catch (error) {
-      wx.showToast({
-        title: error.message || '更新失败',
-        icon: 'none',
-      });
+      wx.showToast({ title: error.message || '更新失败', icon: 'none' });
     }
   },
 
@@ -116,15 +123,9 @@ Page({
     try {
       await removeWish(id);
       await this.loadPageData();
-      wx.showToast({
-        title: '已经移出啦',
-        icon: 'none',
-      });
+      wx.showToast({ title: '已经移出啦', icon: 'none' });
     } catch (error) {
-      wx.showToast({
-        title: error.message || '移除失败',
-        icon: 'none',
-      });
+      wx.showToast({ title: error.message || '移除失败', icon: 'none' });
     }
   },
 });

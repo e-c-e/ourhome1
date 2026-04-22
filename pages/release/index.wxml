@@ -42,18 +42,19 @@
 
     <view class="field">
       <text class="field__label">💌 内容</text>
-      <warm-input
-        textarea="{{true}}"
-        customClass="field__textarea"
-        minHeight="260rpx"
+      <textarea
+        class="release-textarea"
+        style="height: 420rpx; min-height: 420rpx;"
         value="{{content}}"
         placeholder="记录今天的感受、对方说的话、一个小瞬间"
         maxlength="300"
-        bind:input="handleContentInput"
-      ></warm-input>
+        auto-height="false"
+        cursor-spacing="120"
+        bindinput="handleContentInput"
+      ></textarea>
     </view>
 
-    <view class="field-row">
+    <view class="field-row field-row--meta">
       <view class="field field--half">
         <text class="field__label">📅 日期</text>
         <view class="picker-shell">
@@ -74,35 +75,55 @@
           </view>
         </view>
       </view>
+    </view>
 
-      <view class="field field--half field--mood {{moods[selectedMoodIndex] === '自定义' ? 'field--full' : ''}}">
-        <text class="field__label">💗 心情</text>
-        <view class="mood-list">
-          <view
-            wx:for="{{moods}}"
-            wx:key="index"
-            class="mood-chip {{index === selectedMoodIndex ? 'mood-chip--active' : ''}}"
-            data-index="{{index}}"
-            bindtap="selectMood"
-          >
-            {{item}}
-          </view>
+    <view class="field field--mood field--mood-block">
+      <text class="field__label">💗 心情</text>
+      <view class="mood-list">
+        <view
+          wx:for="{{moods}}"
+          wx:key="index"
+          class="mood-chip {{index === selectedMoodIndex ? 'mood-chip--active' : ''}}"
+          data-index="{{index}}"
+          bindtap="selectMood"
+        >
+          {{item}}
         </view>
-        <warm-input
-          wx:if="{{moods[selectedMoodIndex] === '自定义'}}"
-          customClass="mood-custom-input"
-          value="{{customMood}}"
-          placeholder="写下此刻的心情，比如：有点想哭 / 心里堵堵的"
-          maxlength="12"
-          bind:input="handleCustomMoodInput"
-        ></warm-input>
       </view>
+      <warm-input
+        wx:if="{{moods[selectedMoodIndex] === '自定义'}}"
+        customClass="mood-custom-input"
+        value="{{customMood}}"
+        placeholder="写下此刻的心情，比如：有点想哭 / 心里堵堵的"
+        maxlength="12"
+        bind:input="handleCustomMoodInput"
+      ></warm-input>
     </view>
   </view>
 
-  <view class="action-row">
-    <warm-button theme="light" size="large" bind:action="saveDraft">🌷 存草稿</warm-button>
-    <warm-button theme="primary" size="large" loading="{{saving}}" bind:action="publishMoment">❤️ 保存回忆</warm-button>
+  <view class="action-bar">
+    <view class="action-row">
+      <view class="action-row__item">
+        <view class="action-btn action-btn--draft" bindtap="saveDraft">
+          <view class="action-btn__orb action-btn__orb--draft">
+            <text class="action-btn__icon">🌷</text>
+          </view>
+          <view class="action-btn__copy">
+            <text class="action-btn__text">保存草稿</text>
+          </view>
+        </view>
+      </view>
+      <view class="action-row__item">
+        <view class="action-btn action-btn--primary {{saving ? 'action-btn--disabled' : ''}}" bindtap="publishMoment">
+          <view class="action-btn__orb action-btn__orb--primary">
+            <text class="action-btn__icon">❤️</text>
+          </view>
+          <view class="action-btn__copy">
+            <text class="action-btn__text">{{saving ? '保存中...' : '保存回忆'}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
   </view>
 
   <view class="warm-page-end"></view>

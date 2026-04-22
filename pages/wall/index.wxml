@@ -135,7 +135,7 @@
             catchtap="previewMomentImages"
           />
         </view>
-        <view wx:else class="wall-entry__cover-wrap">
+        <view wx:elif="{{item.cover}}" class="wall-entry__cover-wrap">
           <image class="wall-entry__cover" src="{{item.cover}}" mode="aspectFill" />
         </view>
 

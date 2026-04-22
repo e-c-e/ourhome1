@@ -2,8 +2,6 @@ import { fetchHomeData, updateRelationshipStartDate } from '../../api/relationsh
 import { STORAGE_KEYS, formatDate, getDaysBetween } from '../../utils/couple';
 import { ensureAuthorizedPage } from '../../utils/pageAuth';
 
-const DEFAULT_COVER = '/static/home/card0.png';
-
 Page({
   data: {
     today: formatDate(new Date()),
@@ -42,7 +40,7 @@ Page({
 
       const recentMoments = sortedMoments.slice(0, 3).map((item) => ({
         id: item._id,
-        cover: item.cover || DEFAULT_COVER,
+        cover: item.cover || '',
         title: item.title || '今天的记录',
         content: item.content || '写下了一段新的回忆。',
         images: item.images || [],
