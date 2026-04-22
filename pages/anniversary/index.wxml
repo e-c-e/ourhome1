@@ -89,18 +89,20 @@
 
     <view class="panel">
       <view class="panel__title">🌸 新增纪念日</view>
-      <warm-input
-        customClass="field-input"
-        value="{{anniversaryName}}"
-        placeholder="例如：第一次见面"
-        maxlength="20"
-        bind:input="handleAnniversaryNameInput"
-      ></warm-input>
-      <view class="picker-shell">
-        <view class="picker-input">📅 {{anniversaryDate}}</view>
-        <picker class="picker-shell__native" mode="date" value="{{anniversaryDate}}" bindchange="handleAnniversaryDateChange">
-          <view class="picker-shell__hit"></view>
-        </picker>
+      <view class="panel__fields">
+        <warm-input
+          customClass="field-input"
+          value="{{anniversaryName}}"
+          placeholder="例如：第一次见面"
+          maxlength="20"
+          bind:input="handleAnniversaryNameInput"
+        ></warm-input>
+        <view class="picker-shell">
+          <view class="picker-input">📅 {{anniversaryDate}}</view>
+          <picker class="picker-shell__native" mode="date" value="{{anniversaryDate}}" bindchange="handleAnniversaryDateChange">
+            <view class="picker-shell__hit"></view>
+          </picker>
+        </view>
       </view>
       <warm-button theme="primary" size="large" bind:action="addAnniversary">❤️ 新增纪念日</warm-button>
 

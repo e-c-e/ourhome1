@@ -168,5 +168,5 @@
 </view>
 
 <view class="wall-action">
-  <warm-button theme="primary" size="large" shape="round" bind:action="goRelease">❤️ 记录今天</warm-button>
+  <warm-button theme="primary" surface="fixed" size="large" shape="round" bind:action="goRelease">❤️ 记录今天</warm-button>
 </view>

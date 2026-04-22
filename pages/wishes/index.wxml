@@ -73,27 +73,25 @@
       </view>
 
       <!-- Next Wish Hint -->
-      <view wx:if="{{nextWish}}" class="next-wish-hint">
+      <view wx:if="{{pendingWishList.length}}" class="next-wish-hint">
         <text class="next-wish-hint__icon">💌</text>
-        <text class="next-wish-hint__text">下一个想完成：{{nextWish}}</text>
-      </view>
-
-      <!-- Add Wish Panel -->
-      <view class="panel">
-        <view class="panel__title">🌱 种下新的心愿</view>
-        <view class="panel__desc">可以是看海、旅行、做一顿饭，或者只是想一起度过的普通傍晚。</view>
-        <view class="editor-shell">
-          <warm-input
-            customClass="field-input"
-            value="{{wishText}}"
-            placeholder="例如：一起去吹海风看日落"
-            maxlength="40"
-            bind:input="handleWishInput"
-          ></warm-input>
-          <view class="editor-shell__action">
-            <warm-button theme="primary" size="large" bind:action="addWish">🌿 种下心愿</warm-button>
-          </view>
-        </view>
+        <swiper
+          class="next-wish-hint__swiper"
+          vertical="{{true}}"
+          circular="{{pendingWishList.length > 1}}"
+          autoplay="{{pendingWishList.length > 1}}"
+          interval="2600"
+          duration="500"
+        >
+          <block wx:for="{{pendingWishList}}" wx:key="index">
+            <swiper-item>
+              <view class="next-wish-hint__item">
+                <text class="next-wish-hint__label">下一个想完成：</text>
+                <text class="next-wish-hint__text">{{item}}</text>
+              </view>
+            </swiper-item>
+          </block>
+        </swiper>
       </view>
 
       <!-- Flower Garden Grid -->
@@ -109,23 +107,23 @@
           <view class="garden-bed__edge garden-bed__edge--fence"></view>
           <view class="garden-bed__decor garden-bed__decor--can">🪴</view>
           <view class="garden-bed__decor garden-bed__decor--sign">待开花</view>
-          <view class="flower-grid">
+          <view class="soil-grid soil-grid--seed">
             <block wx:for="{{wishes}}" wx:key="id">
-              <view wx:if="{{!item.isCompleted}}" class="flower-pot flower-pot--seed flower-pot--s{{item.potStyle}} flower-pot--lane{{item.gardenLane}} flower-pot--h{{item.gardenHeight}}">
-                <view class="flower-pot__plant">
-                  <text class="flower-pot__emoji">🌱</text>
-                </view>
-                <view class="flower-pot__shell">
-                  <view class="flower-pot__rim"></view>
-                  <view class="flower-pot__soil"></view>
-                  <view class="flower-pot__body">
-                    <view class="flower-pot__label flower-pot__label--seed">待浇灌</view>
-                    <view class="flower-pot__content">{{item.content}}</view>
+              <view wx:if="{{!item.isCompleted}}" class="soil-tile soil-tile--seed soil-tile--s{{item.potStyle}} soil-tile--lane{{item.gardenLane}} soil-tile--h{{item.gardenHeight}} {{item.isExpanded ? 'soil-tile--expanded' : ''}}">
+                <view class="soil-tile__plot-wrap" data-id="{{item.id}}" bindtap="toggleWishDetail">
+                  <view class="soil-tile__sprout">🌱</view>
+                  <view class="soil-tile__plot soil-tile__plot--seed">
+                    <view class="soil-tile__crumbs"></view>
                   </view>
                 </view>
-                <view class="flower-pot__actions flower-pot__actions--hang">
-                  <text class="flower-pot__btn flower-pot__btn--done" data-id="{{item.id}}" bindtap="toggleWish">✓ 完成</text>
-                  <text class="flower-pot__btn flower-pot__btn--del" data-id="{{item.id}}" bindtap="removeWish">移除</text>
+                <view wx:if="{{item.isExpanded}}" class="soil-tile__bubble soil-tile__bubble--seed">
+                  <view class="soil-tile__bubble-body">
+                    <view class="soil-tile__bubble-content">{{item.content}}</view>
+                    <view class="soil-tile__bubble-actions">
+                      <text class="soil-tile__btn soil-tile__btn--done" data-id="{{item.id}}" bindtap="toggleWish">完成</text>
+                      <text class="soil-tile__btn soil-tile__btn--del" data-id="{{item.id}}" bindtap="removeWish">移除</text>
+                    </view>
+                  </view>
                 </view>
               </view>
             </block>
@@ -144,25 +142,44 @@
           <view class="garden-bed__edge garden-bed__edge--stone"></view>
           <view class="garden-bed__decor garden-bed__decor--corner">◦ ◦ ◦</view>
           <view class="garden-bed__decor garden-bed__decor--petal">✿</view>
-          <view class="flower-grid">
+          <view class="soil-grid soil-grid--bloom">
             <block wx:for="{{wishes}}" wx:key="id">
-              <view wx:if="{{item.isCompleted}}" class="flower-pot flower-pot--bloom flower-pot--lane{{item.gardenLane}} flower-pot--h{{item.gardenHeight}} {{item.isFirstBloom ? 'flower-pot--first' : ''}}">
-                <view wx:if="{{item.isFirstBloom}}" class="flower-pot__crown">🎀 第一朵花</view>
-                <view class="flower-pot__plant flower-pot__plant--bloom">
-                  <text class="flower-pot__emoji">{{item.flowerEmoji}}</text>
-                </view>
-                <view class="flower-pot__shell flower-pot__shell--bloom">
-                  <view class="flower-pot__rim flower-pot__rim--bloom"></view>
-                  <view class="flower-pot__soil flower-pot__soil--bloom"></view>
-                  <view class="flower-pot__body flower-pot__body--bloom">
-                    <view class="flower-pot__label flower-pot__label--bloom">心愿达成💐</view>
-                    <view class="flower-pot__content">{{item.content}}</view>
-                    <view wx:if="{{item.completedTime}}" class="flower-pot__date">完成于 {{item.completedTime}}</view>
+              <view wx:if="{{item.isCompleted}}" class="soil-tile soil-tile--bloom soil-tile--s{{item.potStyle}} soil-tile--lane{{item.gardenLane}} soil-tile--h{{item.gardenHeight}} {{item.isFirstBloom ? 'soil-tile--first' : ''}} {{item.isExpanded ? 'soil-tile--expanded' : ''}}">
+                <view wx:if="{{item.isFirstBloom}}" class="soil-tile__crown">🎀 第一朵花</view>
+                <view class="soil-tile__plot-wrap soil-tile__plot-wrap--bloom" data-id="{{item.id}}" bindtap="toggleWishDetail">
+                  <view class="soil-tile__bouquet">
+                    <view class="soil-tile__stem soil-tile__stem--a"></view>
+                    <view class="soil-tile__stem soil-tile__stem--b"></view>
+                    <view class="soil-tile__stem soil-tile__stem--c"></view>
+                    <view class="soil-tile__stem soil-tile__stem--d"></view>
+                    <view class="soil-tile__stem soil-tile__stem--e"></view>
+                    <view class="soil-tile__leaf soil-tile__leaf--a"></view>
+                    <view class="soil-tile__leaf soil-tile__leaf--b"></view>
+                    <view class="soil-tile__leaf soil-tile__leaf--c"></view>
+                    <view class="soil-tile__leaf soil-tile__leaf--d"></view>
+                    <view class="soil-tile__leaf soil-tile__leaf--e"></view>
+                    <text class="soil-tile__flower soil-tile__flower--a">{{item.flowerEmoji}}</text>
+                    <text class="soil-tile__flower soil-tile__flower--b">🌼</text>
+                    <text class="soil-tile__flower soil-tile__flower--c">🌷</text>
+                    <text class="soil-tile__flower soil-tile__flower--d">🌸</text>
+                    <text class="soil-tile__flower soil-tile__flower--e">🌺</text>
+                    <text class="soil-tile__flower soil-tile__flower--f">🌻</text>
+                    <text class="soil-tile__flower soil-tile__flower--g">🌷</text>
+                  </view>
+                  <view class="soil-tile__plot soil-tile__plot--bloom">
+                    <view class="soil-tile__crumbs soil-tile__crumbs--bloom"></view>
                   </view>
                 </view>
-                <view class="flower-pot__actions flower-pot__actions--hang">
-                  <text class="flower-pot__btn flower-pot__btn--undo" data-id="{{item.id}}" bindtap="toggleWish">撤销</text>
-                  <text class="flower-pot__btn flower-pot__btn--del" data-id="{{item.id}}" bindtap="removeWish">移除</text>
+                <view wx:if="{{item.isExpanded}}" class="soil-tile__bubble soil-tile__bubble--bloom">
+                  <view class="soil-tile__bubble-tag">心愿达成</view>
+                  <view class="soil-tile__bubble-body soil-tile__bubble-body--bloom">
+                    <view class="soil-tile__bubble-content">{{item.content}}</view>
+                    <view wx:if="{{item.completedTime}}" class="soil-tile__bubble-date">完成于 {{item.completedTime}}</view>
+                    <view class="soil-tile__bubble-actions">
+                      <text class="soil-tile__btn soil-tile__btn--undo" data-id="{{item.id}}" bindtap="toggleWish">撤销</text>
+                      <text class="soil-tile__btn soil-tile__btn--del" data-id="{{item.id}}" bindtap="removeWish">移除</text>
+                    </view>
+                  </view>
                 </view>
               </view>
             </block>
@@ -193,6 +210,24 @@
         </view>
         <view class="garden-empty__title">空空的小花圃</view>
         <view class="garden-empty__desc">还没有种下心愿哦，和宝一起种一朵属于你们的小花吧～</view>
+      </view>
+
+      <!-- Add Wish Panel -->
+      <view class="panel">
+        <view class="panel__title">🌱 种下新的心愿</view>
+        <view class="panel__desc">可以是看海、旅行、做一顿饭，或者只是想一起度过的普通傍晚。</view>
+        <view class="editor-shell">
+          <warm-input
+            customClass="field-input"
+            value="{{wishText}}"
+            placeholder="例如：一起去吹海风看日落"
+            maxlength="40"
+            bind:input="handleWishInput"
+          ></warm-input>
+          <view class="editor-shell__action">
+            <warm-button theme="primary" size="large" bind:action="addWish">🌿 种下心愿</warm-button>
+          </view>
+        </view>
       </view>
 
       <view class="warm-page-end"></view>

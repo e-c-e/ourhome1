@@ -338,8 +338,8 @@
   border-radius: 32rpx;
   background:
     radial-gradient(circle at top right, rgba(255, 255, 255, 0.7), transparent 28%),
-    linear-gradient(135deg, #fff0f3 0%, #fff7ef 52%, #fffaf6 100%);
-  box-shadow: 0 18rpx 42rpx rgba(255, 158, 170, 0.14);
+    linear-gradient(135deg, rgba(255, 240, 243, 0.96) 0%, rgba(255, 247, 239, 0.94) 52%, rgba(255, 250, 246, 0.94) 100%);
+  box-shadow: 0 22rpx 52rpx rgba(255, 158, 170, 0.12), inset 0 0 0 2rpx rgba(255, 255, 255, 0.3);
 
   &__top {
     display: flex;
@@ -397,8 +397,10 @@
 .day-card,
 .wall-entry {
   border-radius: 32rpx;
-  background: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 16rpx 44rpx rgba(92, 75, 58, 0.08);
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.74), transparent 28%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(255, 249, 250, 0.92) 100%);
+  box-shadow: 0 20rpx 50rpx rgba(92, 75, 58, 0.08), inset 0 0 0 2rpx rgba(255, 255, 255, 0.34);
 }
 
 .story-hero,
@@ -599,9 +601,11 @@
 .wall-entry {
   position: relative;
   padding: 20rpx;
-  background: linear-gradient(180deg, #fff9f7 0%, #fffefc 100%);
-  border: 2rpx solid rgba(255, 198, 214, 0.42);
-  box-shadow: 0 16rpx 44rpx rgba(92, 75, 58, 0.08), inset 0 0 0 8rpx rgba(255, 247, 249, 0.72);
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.76), transparent 26%),
+    linear-gradient(180deg, rgba(255, 249, 247, 0.96) 0%, rgba(255, 254, 252, 0.94) 100%);
+  border: 2rpx solid rgba(255, 226, 232, 0.32);
+  box-shadow: 0 18rpx 40rpx rgba(92, 75, 58, 0.08), inset 0 0 0 4rpx rgba(255, 247, 249, 0.64);
 
   &__reaction {
     position: absolute;
@@ -689,7 +693,7 @@
     border-radius: 999rpx;
     font-size: 22rpx;
     color: rgba(92, 75, 58, 0.62);
-    background: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.72);
   }
 
   &__ops {
@@ -735,6 +739,22 @@
   bottom: 44rpx;
   bottom: calc(44rpx + constant(safe-area-inset-bottom));
   bottom: calc(44rpx + env(safe-area-inset-bottom));
+  padding: 18rpx;
+  border-radius: 44rpx;
+  background: linear-gradient(180deg, rgba(255, 249, 247, 0.96) 0%, rgba(255, 244, 242, 0.9) 100%);
+  box-shadow: 0 20rpx 40rpx rgba(203, 168, 176, 0.14), inset 0 2rpx 0 rgba(255, 255, 255, 0.62), inset 0 0 0 2rpx rgba(238, 221, 224, 0.52);
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 20rpx;
+    right: 20rpx;
+    top: 10rpx;
+    height: 18rpx;
+    border-radius: 999rpx;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0) 100%);
+    pointer-events: none;
+  }
 
   .t-button {
     width: 100%;

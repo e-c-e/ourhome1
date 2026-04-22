@@ -16,6 +16,7 @@ Page({
     latestDate: '',
     moments: [],
     recentMoments: [],
+    memoryFocusIndex: 0,
     petIslandHint: '宠物岛功能暂未开启，先把今天的回忆好好存起来。',
     loading: true,
     errorMessage: '',
@@ -41,8 +42,10 @@ Page({
       const recentMoments = sortedMoments.slice(0, 3).map((item) => ({
         id: item._id,
         cover: item.cover || '',
+        coverImage: item.cover || (item.images && item.images.length ? item.images[0] : ''),
         title: item.title || '今天的记录',
         content: item.content || '写下了一段新的回忆。',
+        summary: item.content || '写下了一段新的回忆。',
         images: item.images || [],
         date: item.date || this.data.today,
         mood: item.mood || '日常',
@@ -67,6 +70,7 @@ Page({
         latestDate: latestMoment ? latestMoment.date : '',
         moments: sortedMoments,
         recentMoments,
+        memoryFocusIndex: 0,
         petIslandHint,
         loading: false,
       });
@@ -92,6 +96,12 @@ Page({
   goRelease() {
     wx.navigateTo({
       url: '/pages/release/index',
+    });
+  },
+
+  handleMemorySwiperChange(e) {
+    this.setData({
+      memoryFocusIndex: e.detail.current || 0,
     });
   },
 

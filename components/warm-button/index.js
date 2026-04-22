@@ -12,6 +12,10 @@ Component({
       type: String,
       value: 'large',
     },
+    surface: {
+      type: String,
+      value: 'floating',
+    },
     block: {
       type: Boolean,
       value: false,
@@ -34,7 +38,7 @@ Component({
     styleVars: '',
   },
   observers: {
-    'theme,variant,disabled': function (theme, variant, disabled) {
+    'theme,variant,disabled,surface': function (theme, variant, disabled, surface) {
       let rootClass = 'warm-button warm-button--primary';
       let styleVars = [
         '--td-button-border-width: 0rpx',
@@ -94,6 +98,15 @@ Component({
 
       if (disabled) {
         styleVars.push('--td-button-border-width: 0rpx');
+      }
+
+      if (surface === 'fixed') {
+        rootClass += ' warm-button--fixed-surface';
+        styleVars = styleVars.concat([
+          '--td-button-border-radius: 40rpx',
+          '--td-button-large-height: 104rpx',
+          '--td-button-large-padding-horizontal: 34rpx',
+        ]);
       }
 
       this.setData({

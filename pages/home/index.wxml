@@ -66,48 +66,45 @@
     <view class="section-panel section-panel--memory-list">
       <view class="section-head">
         <text class="section-head__title">🌸 最近回忆</text>
-        <text class="section-head__sub">共 {{recentMoments.length}} 条</text>
+        <text class="section-head__sub">轻轻翻看</text>
       </view>
 
-      <view class="memory-feed">
-        <view wx:for="{{recentMoments}}" wx:key="id" class="memory-entry {{!item.previewImages.length && !item.cover ? 'memory-entry--text-only' : ''}}" data-id="{{item.id}}" bindtap="goMomentDetail">
-          <view class="memory-entry__gallery" wx:if="{{item.previewImages.length}}">
-            <image
-              wx:for="{{item.previewImages}}"
-              wx:key="*this"
-              class="memory-entry__thumb"
-              src="{{item}}"
-              mode="aspectFill"
-              data-images="{{item.previewImages}}"
-              data-current="{{item}}"
-              catchtap="previewMomentImages"
-            />
-          </view>
-          <view wx:elif="{{item.cover}}" class="memory-entry__cover-wrap">
-            <image class="memory-entry__cover" src="{{item.cover}}" mode="aspectFill" />
-          </view>
-          <view wx:else class="memory-entry__placeholder">
-            <view class="memory-entry__placeholder-row">
-              <text class="memory-entry__placeholder-icon">💌</text>
-              <text class="memory-entry__placeholder-icon memory-entry__placeholder-icon--soft">✿</text>
-            </view>
-            <view class="memory-entry__placeholder-title">这是一条只用文字写下的回忆</view>
-            <view class="memory-entry__placeholder-desc">没有照片也没关系，心动的小瞬间本来就值得被记住。</view>
-          </view>
+      <swiper
+        class="memory-carousel"
+        current="{{memoryFocusIndex}}"
+        previous-margin="80rpx"
+        next-margin="80rpx"
+        circular="{{recentMoments.length > 1}}"
+        bindchange="handleMemorySwiperChange"
+      >
+        <block wx:for="{{recentMoments}}" wx:key="id">
+          <swiper-item>
+            <view class="memory-carousel__item {{index === memoryFocusIndex ? 'memory-carousel__item--active' : 'memory-carousel__item--side'}}">
+              <view class="memory-card {{!item.coverImage ? 'memory-card--text-only' : ''}}" data-id="{{item.id}}" bindtap="goMomentDetail">
+                <view wx:if="{{item.coverImage}}" class="memory-card__media-wrap">
+                  <image class="memory-card__media" src="{{item.coverImage}}" mode="aspectFill" />
+                </view>
+                <view wx:else class="memory-card__placeholder">
+                  <text class="memory-card__placeholder-icon">💌</text>
+                  <text class="memory-card__placeholder-title">这是一条文字回忆</text>
+                </view>
 
-          <view class="memory-entry__body">
-            <view class="memory-entry__row">
-              <text class="memory-entry__date">{{item.date}}</text>
-              <text class="memory-entry__mood">💗 {{item.mood}}</text>
+                <view class="memory-card__body">
+                  <view class="memory-card__meta">
+                    <text class="memory-card__date">{{item.date}}</text>
+                    <text class="memory-card__mood">💗 {{item.mood}}</text>
+                  </view>
+                  <view class="memory-card__title">{{item.title}}</view>
+                  <view class="memory-card__summary">{{item.summary}}</view>
+                  <view wx:if="{{item.locationText}}" class="memory-card__footer">
+                    <text class="memory-card__location">📍 {{item.locationText}}</text>
+                  </view>
+                </view>
+              </view>
             </view>
-            <view class="memory-entry__title">{{item.title}}</view>
-            <view class="memory-entry__text">{{item.content}}</view>
-            <view wx:if="{{item.locationText}}" class="memory-entry__footer">
-              <text class="memory-entry__location">📍 {{item.locationText}}</text>
-            </view>
-          </view>
-        </view>
-      </view>
+          </swiper-item>
+        </block>
+      </swiper>
     </view>
 
     <view class="warm-page-end"></view>

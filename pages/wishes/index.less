@@ -307,10 +307,35 @@
 
   &__icon { font-size: 30rpx; flex-shrink: 0; }
 
+  &__swiper {
+    flex: 1;
+    height: 44rpx;
+    overflow: hidden;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    height: 44rpx;
+    min-width: 0;
+  }
+
+  &__label {
+    flex-shrink: 0;
+    font-size: 26rpx;
+    line-height: 1.6;
+    color: rgba(184, 110, 121, 0.86);
+  }
+
   &__text {
+    flex: 1;
+    min-width: 0;
     font-size: 26rpx;
     line-height: 1.6;
     color: #b86e79;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
@@ -391,20 +416,44 @@
   }
 }
 
-// ─── Flower Grid ──────────────────────────────────────────────────
-.flower-grid {
+// ─── Soil Grid ───────────────────────────────────────────────────
+.soil-grid {
   position: relative;
   z-index: 2;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18rpx 16rpx;
-  align-items: end;
-  padding-bottom: 36rpx;
+  gap: 24rpx 10rpx;
+  align-items: start;
+  padding: 16rpx 4rpx 42rpx;
+  overflow: visible;
+
+  &--seed,
+  &--bloom {
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 54rpx;
+      height: 120rpx;
+      border-radius: 24rpx;
+      z-index: 0;
+      pointer-events: none;
+    }
+  }
+
+  &--seed::before {
+    background: linear-gradient(180deg, rgba(136, 93, 60, 0.08) 0%, rgba(108, 72, 44, 0.18) 100%);
+  }
+
+  &--bloom::before {
+    background: linear-gradient(180deg, rgba(148, 98, 67, 0.08) 0%, rgba(124, 78, 59, 0.18) 100%);
+  }
 }
 
 .garden-bed {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   padding: 30rpx 18rpx 92rpx;
   border-radius: 30rpx;
   background:
@@ -578,58 +627,82 @@
   }
 }
 
-// ─── Single Flower Pot Card ───────────────────────────────────────
-.flower-pot {
+.soil-tile {
   position: relative;
   z-index: 2;
-  padding-top: 6rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 6rpx;
+
+  &--expanded {
+    z-index: 12;
+  }
+
+  &--lane1 {
+    transform: translateY(12rpx);
+  }
 
   &--lane2 {
-    transform: translateY(18rpx);
+    transform: translateY(-10rpx);
   }
 
   &--lane3 {
-    transform: translateY(36rpx);
+    transform: translateY(18rpx);
+  }
+
+  &--h1 {
+    .soil-tile__plot {
+      height: 82rpx;
+    }
   }
 
   &--h2 {
-    .flower-pot__plant {
-      height: 122rpx;
+    .soil-tile__plot {
+      height: 96rpx;
     }
   }
 
-  // pot color variants for pending
-  &--s1 .flower-pot__rim { background: linear-gradient(135deg, #e8b4a0 0%, #d9988a 100%); }
-  &--s2 .flower-pot__rim { background: linear-gradient(135deg, #c5a8d4 0%, #b492c4 100%); }
-  &--s3 .flower-pot__rim { background: linear-gradient(135deg, #92c4b5 0%, #79b2a2 100%); }
+  &--s1 .soil-tile__plot {
+    background:
+      radial-gradient(circle at 18% 26%, rgba(89, 52, 26, 0.18), transparent 12%),
+      radial-gradient(circle at 74% 58%, rgba(91, 55, 28, 0.16), transparent 12%),
+      linear-gradient(180deg, #9a6035 0%, #734521 62%, #5e371a 100%);
+  }
+
+  &--s2 .soil-tile__plot {
+    background:
+      radial-gradient(circle at 24% 18%, rgba(87, 55, 29, 0.18), transparent 12%),
+      radial-gradient(circle at 76% 62%, rgba(105, 66, 35, 0.14), transparent 12%),
+      linear-gradient(180deg, #a06638 0%, #794a25 62%, #633a1e 100%);
+  }
+
+  &--s3 .soil-tile__plot {
+    background:
+      radial-gradient(circle at 24% 22%, rgba(91, 58, 33, 0.18), transparent 12%),
+      radial-gradient(circle at 72% 54%, rgba(73, 43, 24, 0.18), transparent 12%),
+      linear-gradient(180deg, #8f572f 0%, #6f4120 62%, #563116 100%);
+  }
 
   &--bloom {
-    .flower-pot__rim {
-      background: linear-gradient(135deg, #ffb3c8 0%, #ff8fa8 100%);
+    .soil-tile__plot {
+      box-shadow: 0 12rpx 18rpx rgba(84, 48, 24, 0.16);
     }
 
-    .flower-pot__soil {
-      background: linear-gradient(180deg, rgba(145, 96, 105, 0.84) 0%, rgba(121, 74, 85, 0.94) 100%);
-    }
-
-    .flower-pot__body {
-      background: linear-gradient(180deg, rgba(253, 220, 228, 0.98) 0%, rgba(238, 179, 191, 0.98) 100%);
-      box-shadow: 0 18rpx 28rpx rgba(228, 154, 176, 0.26), inset 0 -16rpx 18rpx rgba(176, 97, 123, 0.14);
+    .soil-tile__info {
+      background: linear-gradient(180deg, rgba(255, 249, 251, 0.96) 0%, rgba(255, 238, 242, 0.9) 100%);
     }
   }
 
-  &--first {
-    .flower-pot__body {
-      box-shadow: 0 22rpx 34rpx rgba(232, 138, 175, 0.28), inset 0 -16rpx 18rpx rgba(176, 97, 123, 0.16),
-        0 0 0 4rpx rgba(255, 220, 234, 0.44);
-    }
+  &--first .soil-tile__info {
+    box-shadow: 0 18rpx 28rpx rgba(233, 171, 188, 0.18), 0 0 0 4rpx rgba(255, 224, 232, 0.52);
   }
 
   &__crown {
     width: fit-content;
     margin: 0 auto 10rpx;
-    padding: 10rpx 16rpx;
-    font-size: 20rpx;
+    padding: 8rpx 14rpx;
+    font-size: 18rpx;
     font-weight: 600;
     color: #b86e79;
     background: rgba(255, 236, 242, 0.96);
@@ -638,233 +711,347 @@
     border-radius: 999rpx;
   }
 
-  &__shell {
+  &__plot-wrap {
     position: relative;
-    padding-bottom: 12rpx;
+    width: 100%;
+    padding-top: 28rpx;
+    margin-bottom: 4rpx;
+    cursor: pointer;
 
-    &::before,
+    &--bloom {
+      padding-top: 106rpx;
+    }
+
     &::after {
       content: '';
       position: absolute;
-      top: 34rpx;
-      bottom: 34rpx;
-      width: 20rpx;
-      background: linear-gradient(180deg, rgba(226, 161, 132, 0.96) 0%, rgba(204, 132, 102, 0.96) 100%);
-      z-index: 1;
-    }
-
-    &::before {
-      left: 14rpx;
-      border-radius: 20rpx 0 16rpx 18rpx;
-      transform: skewY(8deg);
-    }
-
-    &::after {
-      right: 14rpx;
-      border-radius: 0 20rpx 18rpx 16rpx;
-      transform: skewY(-8deg);
-    }
-
-    &--bloom {
-      &::before,
-      &::after {
-        background: linear-gradient(180deg, rgba(240, 182, 198, 0.96) 0%, rgba(214, 131, 156, 0.96) 100%);
-      }
+      left: 6rpx;
+      right: 6rpx;
+      bottom: -16rpx;
+      height: 26rpx;
+      border-radius: 50%;
+      background: radial-gradient(circle at center, rgba(109, 69, 37, 0.18) 0%, rgba(109, 69, 37, 0) 72%);
+      z-index: 0;
     }
   }
 
-  &__plant {
-    display: flex;
-    justify-content: center;
-    align-items: flex-end;
-    height: 112rpx;
-    padding-bottom: 8rpx;
-    position: relative;
-
-    &::before {
-      content: '';
-      position: absolute;
-      bottom: 14rpx;
-      left: 50%;
-      width: 6rpx;
-      height: 34rpx;
-      transform: translateX(-50%);
-      border-radius: 999rpx;
-      background: linear-gradient(180deg, rgba(124, 173, 116, 0.2) 0%, rgba(102, 155, 96, 0.82) 100%);
-    }
-
-    &--bloom {
-      height: 120rpx;
-
-      &::before {
-        height: 30rpx;
-      }
-    }
-  }
-
-  &__emoji {
-    position: relative;
-    z-index: 2;
-    font-size: 62rpx;
+  &__sprout {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
+    font-size: 36rpx;
     line-height: 1;
-  }
-
-  &__plant--bloom &__emoji {
-    font-size: 72rpx;
-  }
-
-  &__rim {
-    position: relative;
     z-index: 2;
-    height: 22rpx;
+  }
+
+  &__flowers {
+    display: none;
+  }
+
+  &__bouquet {
+    position: absolute;
+    left: 50%;
+    bottom: 48rpx;
+    transform: translateX(-50%);
+    width: 100%;
+    height: 134rpx;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  &__stem {
+    position: absolute;
+    bottom: 4rpx;
+    width: 6rpx;
     border-radius: 999rpx;
-    margin: 0 14rpx -4rpx;
-    background: linear-gradient(135deg, #e8b4a0 0%, #d9988a 100%);
-    box-shadow: inset 0 -6rpx 8rpx rgba(92, 75, 58, 0.1), 0 8rpx 12rpx rgba(163, 121, 95, 0.14);
-  }
+    background: linear-gradient(180deg, rgba(135, 188, 108, 0.16) 0%, rgba(96, 156, 84, 0.92) 100%);
+    transform-origin: bottom center;
 
-  &__soil {
-    position: relative;
-    z-index: 2;
-    height: 18rpx;
-    margin: 0 20rpx -8rpx;
-    border-radius: 999rpx 999rpx 12rpx 12rpx;
-    background: linear-gradient(180deg, rgba(134, 99, 80, 0.86) 0%, rgba(108, 75, 58, 0.94) 100%);
-    box-shadow: inset 0 4rpx 6rpx rgba(255, 240, 224, 0.12);
+    &--a {
+      left: 36%;
+      height: 74rpx;
+      transform: rotate(-12deg);
+    }
 
-    &--bloom {
-      background: linear-gradient(180deg, rgba(145, 96, 105, 0.84) 0%, rgba(121, 74, 85, 0.94) 100%);
+    &--b {
+      left: 50%;
+      height: 86rpx;
+      transform: translateX(-50%);
+    }
+
+    &--c {
+      left: 63%;
+      height: 70rpx;
+      transform: rotate(12deg);
+    }
+
+    &--d {
+      left: 24%;
+      height: 60rpx;
+      transform: rotate(-22deg);
+    }
+
+    &--e {
+      left: 74%;
+      height: 62rpx;
+      transform: rotate(22deg);
     }
   }
 
-  &__body {
+  &__leaf {
+    position: absolute;
+    bottom: 22rpx;
+    width: 22rpx;
+    height: 14rpx;
+    border-radius: 22rpx 22rpx 22rpx 2rpx;
+    background: linear-gradient(180deg, rgba(198, 227, 136, 0.96) 0%, rgba(126, 186, 83, 0.96) 100%);
+    box-shadow: inset 0 -3rpx 4rpx rgba(93, 142, 63, 0.18);
+
+    &--a {
+      left: 26%;
+      transform: rotate(-28deg);
+    }
+
+    &--b {
+      left: 48%;
+      transform: rotate(12deg);
+    }
+
+    &--c {
+      right: 20%;
+      transform: rotate(34deg) scaleX(-1);
+    }
+
+    &--d {
+      left: 18%;
+      bottom: 38rpx;
+      transform: rotate(-42deg);
+    }
+
+    &--e {
+      right: 14%;
+      bottom: 36rpx;
+      transform: rotate(42deg) scaleX(-1);
+    }
+  }
+
+  &__flower {
+    position: absolute;
+    font-size: 30rpx;
+    line-height: 1;
+
+    &--a {
+      left: 50%;
+      top: 0;
+      transform: translateX(-50%);
+    }
+
+    &--b {
+      left: 10rpx;
+      top: 36rpx;
+    }
+
+    &--c {
+      right: 10rpx;
+      top: 40rpx;
+    }
+
+    &--d {
+      left: 28%;
+      top: 18rpx;
+    }
+
+    &--e {
+      right: 22%;
+      top: 16rpx;
+    }
+
+    &--f {
+      left: 18%;
+      top: 50rpx;
+    }
+
+    &--g {
+      right: 14%;
+      top: 54rpx;
+    }
+  }
+
+  &__plot {
     position: relative;
-    padding: 22rpx 18rpx 20rpx;
-    margin: 0 20rpx;
-    border-radius: 14rpx 14rpx 34rpx 34rpx;
-    min-height: 164rpx;
-    background: linear-gradient(180deg, rgba(242, 191, 167, 0.98) 0%, rgba(223, 153, 124, 0.98) 100%);
-    box-shadow: 0 18rpx 28rpx rgba(177, 123, 96, 0.24), inset 0 -18rpx 18rpx rgba(157, 97, 66, 0.14);
+    width: 100%;
+    height: 88rpx;
+    border-radius: 10rpx 10rpx 8rpx 8rpx;
+    overflow: hidden;
+    box-shadow: 0 10rpx 18rpx rgba(84, 48, 24, 0.14), inset 0 2rpx 0 rgba(255, 220, 182, 0.08);
 
     &::before {
       content: '';
       position: absolute;
-      left: 20rpx;
-      right: 20rpx;
-      top: 16rpx;
-      height: 10rpx;
-      border-radius: 999rpx;
-      background: rgba(255, 240, 232, 0.28);
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 12rpx;
+      background: linear-gradient(180deg, rgba(255, 239, 213, 0.16) 0%, rgba(255, 239, 213, 0) 100%);
     }
 
     &::after {
       content: '';
       position: absolute;
+      left: 6rpx;
+      right: 6rpx;
+      bottom: -18rpx;
+      height: 28rpx;
+      border-radius: 0 0 10rpx 10rpx;
+      background:
+        radial-gradient(circle at 16% 18%, rgba(86, 48, 23, 0.22) 0 8%, transparent 9%),
+        radial-gradient(circle at 82% 34%, rgba(72, 40, 18, 0.18) 0 7%, transparent 8%),
+        linear-gradient(180deg, rgba(103, 63, 33, 0.98) 0%, rgba(77, 45, 21, 0.98) 100%);
+      box-shadow: 0 10rpx 14rpx rgba(79, 47, 24, 0.18);
+    }
+
+    &--bloom {
+      box-shadow: 0 14rpx 22rpx rgba(84, 48, 24, 0.18), inset 0 2rpx 0 rgba(255, 229, 190, 0.1);
+    }
+  }
+
+  &__crumbs {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 12% 18%, rgba(70, 42, 18, 0.24) 0 6%, transparent 7%),
+      radial-gradient(circle at 82% 26%, rgba(58, 34, 13, 0.22) 0 6%, transparent 7%),
+      radial-gradient(circle at 22% 68%, rgba(77, 46, 20, 0.18) 0 5%, transparent 6%),
+      radial-gradient(circle at 68% 74%, rgba(68, 39, 17, 0.18) 0 5%, transparent 6%),
+      radial-gradient(circle at 48% 48%, rgba(90, 56, 28, 0.14) 0 4%, transparent 5%),
+      radial-gradient(circle at 16% 84%, rgba(84, 52, 26, 0.18) 0 5%, transparent 6%),
+      radial-gradient(circle at 88% 82%, rgba(74, 46, 22, 0.16) 0 5%, transparent 6%);
+
+    &--bloom {
+      opacity: 0.9;
+    }
+  }
+
+  &__bubble {
+    position: absolute;
+    left: 50%;
+    width: 188rpx;
+    padding: 12rpx;
+    border-radius: 26rpx;
+    transform: translateX(-50%);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 245, 240, 0.46) 100%),
+      radial-gradient(circle at 22% 14%, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0) 34%),
+      linear-gradient(135deg, rgba(255, 221, 229, 0.24) 0%, rgba(255, 236, 225, 0.12) 100%);
+    border: 2rpx solid rgba(255, 255, 255, 0.62);
+    box-shadow:
+      0 18rpx 40rpx rgba(181, 141, 112, 0.16),
+      0 8rpx 18rpx rgba(255, 255, 255, 0.18) inset,
+      0 -8rpx 18rpx rgba(255, 223, 231, 0.12) inset,
+      0 0 0 1rpx rgba(255, 214, 226, 0.24);
+    z-index: 20;
+    backdrop-filter: blur(14rpx) saturate(1.15);
+    -webkit-backdrop-filter: blur(14rpx) saturate(1.15);
+
+    &::before {
+      content: '';
+      position: absolute;
       left: 50%;
-      bottom: -10rpx;
-      width: 52%;
-      height: 20rpx;
-      transform: translateX(-50%);
-      border-radius: 0 0 999rpx 999rpx;
-      background: linear-gradient(180deg, rgba(201, 133, 103, 0.96) 0%, rgba(184, 113, 84, 0.96) 100%);
-      box-shadow: 0 10rpx 16rpx rgba(155, 101, 75, 0.16);
+      width: 18rpx;
+      height: 18rpx;
+      transform: translateX(-50%) rotate(45deg);
+      background: rgba(255, 249, 245, 0.76);
+      border-left: 2rpx solid rgba(255, 255, 255, 0.52);
+      border-top: 2rpx solid rgba(255, 255, 255, 0.52);
+      box-shadow: 4rpx 4rpx 12rpx rgba(181, 141, 112, 0.08);
     }
 
-    &--bloom {
-      &::after {
-        background: linear-gradient(180deg, rgba(226, 149, 173, 0.96) 0%, rgba(211, 122, 149, 0.96) 100%);
-      }
+    &::after {
+      content: '';
+      position: absolute;
+      left: 16rpx;
+      right: 16rpx;
+      top: 10rpx;
+      height: 26rpx;
+      border-radius: 999rpx;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.52) 0%, rgba(255, 255, 255, 0.08) 100%);
+      pointer-events: none;
     }
   }
 
-  &__label {
+  &__bubble--seed {
+    top: 120rpx;
+
+    &::before {
+      top: -8rpx;
+    }
+  }
+
+  &__bubble--bloom {
+    top: 176rpx;
+    background:
+      linear-gradient(180deg, rgba(255, 251, 253, 0.72) 0%, rgba(255, 238, 244, 0.5) 100%),
+      radial-gradient(circle at 22% 14%, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0) 34%),
+      linear-gradient(135deg, rgba(255, 204, 223, 0.28) 0%, rgba(255, 232, 240, 0.1) 100%);
+
+    &::before {
+      top: -8rpx;
+      background: rgba(255, 242, 246, 0.78);
+    }
+  }
+
+  &__bubble-tag {
     width: fit-content;
-    max-width: 100%;
-    margin: 0 auto 14rpx;
-    padding: 6rpx 16rpx;
+    margin: 0 auto 8rpx;
+    padding: 5rpx 12rpx;
     border-radius: 999rpx;
-    font-size: 20rpx;
-    font-weight: 600;
-    letter-spacing: 1rpx;
-
-    &--seed {
-      color: #fff8ef;
-      background: rgba(149, 105, 78, 0.82);
-    }
-
-    &--bloom {
-      color: #fff7fb;
-      background: rgba(183, 96, 125, 0.82);
-    }
+    font-size: 18rpx;
+    font-weight: 700;
+    color: #fff8fb;
+    background: linear-gradient(180deg, rgba(208, 122, 149, 0.88) 0%, rgba(184, 103, 130, 0.82) 100%);
+    box-shadow: 0 6rpx 12rpx rgba(183, 110, 136, 0.18);
   }
 
-  &__content {
-    font-size: 24rpx;
-    font-weight: 600;
-    color: rgba(78, 50, 34, 0.9);
-    line-height: 1.55;
+  &__bubble-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10rpx;
+    align-items: stretch;
+  }
+
+  &__bubble-body--bloom {
+    gap: 8rpx;
+  }
+
+  &__bubble-content {
+    font-size: 20rpx;
+    line-height: 1.6;
+    color: rgba(84, 54, 39, 0.94);
+    text-align: left;
     word-break: break-all;
-    text-align: center;
-    position: relative;
-    z-index: 2;
+    text-shadow: 0 1rpx 0 rgba(255, 255, 255, 0.22);
   }
 
-  &__date {
-    margin-top: 10rpx;
-    font-size: 20rpx;
-    color: rgba(103, 67, 74, 0.72);
-    text-align: center;
-    position: relative;
-    z-index: 2;
+  &__bubble-date {
+    font-size: 16rpx;
+    color: rgba(125, 88, 95, 0.72);
+    text-align: left;
   }
 
-  &__actions {
+  &__bubble-actions {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10rpx;
+    gap: 8rpx;
     flex-wrap: wrap;
-    margin-top: 18rpx;
-
-    &--hang {
-      position: relative;
-      z-index: 3;
-      gap: 14rpx;
-      margin-top: -4rpx;
-      padding: 0 8rpx;
-    }
   }
 
   &__btn {
-    position: relative;
-    font-size: 20rpx;
-    padding: 9rpx 16rpx 8rpx;
+    font-size: 16rpx;
+    padding: 6rpx 10rpx;
     border-radius: 999rpx;
-    box-shadow: 0 8rpx 16rpx rgba(92, 75, 58, 0.08);
-
-    &::before {
-      content: '';
-      position: absolute;
-      left: 50%;
-      top: -10rpx;
-      width: 2rpx;
-      height: 10rpx;
-      transform: translateX(-50%);
-      background: rgba(173, 152, 136, 0.68);
-    }
-
-    &::after {
-      content: '';
-      position: absolute;
-      left: 50%;
-      top: -14rpx;
-      width: 14rpx;
-      height: 10rpx;
-      transform: translateX(-50%);
-      border: 2rpx solid rgba(173, 152, 136, 0.68);
-      border-bottom: 0;
-      border-radius: 999rpx 999rpx 0 0;
-    }
+    box-shadow: 0 6rpx 12rpx rgba(92, 75, 58, 0.08);
 
     &--done {
       color: #5a8f6e;
@@ -957,14 +1144,49 @@
 }
 
 @media (max-width: 720rpx) {
-  .flower-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .soil-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18rpx 8rpx;
+    padding-bottom: 36rpx;
   }
 
-  .flower-pot {
-    &--lane2,
-    &--lane3 {
-      transform: none;
+  .soil-tile {
+    &__bubble {
+      width: 170rpx;
+      padding: 10rpx;
+    }
+
+    &__bubble--seed {
+      top: 110rpx;
+    }
+
+    &__bubble--bloom {
+      top: 162rpx;
+    }
+
+    &__bubble-content {
+      font-size: 18rpx;
+    }
+
+    &__bubble-date {
+      font-size: 15rpx;
+    }
+
+    &__plot {
+      height: 78rpx;
+    }
+
+    &__plot-wrap--bloom {
+      padding-top: 92rpx;
+    }
+
+    &__bouquet {
+      height: 116rpx;
+      bottom: 46rpx;
+    }
+
+    &__flower {
+      font-size: 24rpx;
     }
   }
 
