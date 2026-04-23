@@ -713,7 +713,9 @@ exports.main = async (event) => {
         data: {
           content: data.content,
           isCompleted: false,
+          isStored: false,
           completedTime: '',
+          storedTime: '',
           createTime: Date.now(),
           createUserId: user._id,
         },
@@ -726,7 +728,22 @@ exports.main = async (event) => {
       await db.collection(WISHES_COLLECTION).doc(data.id).update({
         data: {
           isCompleted,
+          isStored: isCompleted ? false : false,
           completedTime: isCompleted ? data.completedTime || '' : '',
+          storedTime: isCompleted ? '' : '',
+        },
+      });
+      return { success: true };
+    }
+    case 'setWishStored': {
+      const current = await db.collection(WISHES_COLLECTION).doc(data.id).get();
+      if (!current.data.isCompleted && data.isStored) {
+        throw new Error('WISH_NOT_COMPLETED');
+      }
+      await db.collection(WISHES_COLLECTION).doc(data.id).update({
+        data: {
+          isStored: !!data.isStored,
+          storedTime: data.isStored ? Date.now() : '',
         },
       });
       return { success: true };

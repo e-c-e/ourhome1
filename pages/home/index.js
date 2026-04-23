@@ -45,7 +45,7 @@ Page({
         coverImage: item.cover || (item.images && item.images.length ? item.images[0] : ''),
         title: item.title || '今天的记录',
         content: item.content || '写下了一段新的回忆。',
-        summary: item.content || '写下了一段新的回忆。',
+        summary: (item.content || '写下了一段新的回忆。').slice(0, 42),
         images: item.images || [],
         date: item.date || this.data.today,
         mood: item.mood || '日常',

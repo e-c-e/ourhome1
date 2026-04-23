@@ -21,6 +21,22 @@ function shiftMonth(monthText, delta) {
   return formatMonthValue(base);
 }
 
+function buildMonthFocusCards(monthText, summary = {}) {
+  const prevMonth = shiftMonth(monthText, -1);
+  const nextMonth = shiftMonth(monthText, 1);
+  return [
+    { key: 'prev', month: prevMonth, label: prevMonth, role: 'side' },
+    {
+      key: 'current',
+      month: monthText,
+      label: monthText,
+      role: 'main',
+      summaryText: `${summary.recordCount || 0} 条回忆 · ${summary.activeDays || 0} 天有记录`,
+    },
+    { key: 'next', month: nextMonth, label: nextMonth, role: 'side' },
+  ];
+}
+
 function buildCalendarWeeks(monthText, momentsByDate, selectedDate) {
   const base = getMonthDate(monthText);
   const today = formatDate(new Date());
@@ -74,6 +90,7 @@ Page({
       activeDays: 0,
       photoCount: 0,
     },
+    monthFocusCards: [],
     calendarWeeks: [],
     selectedDate: formatDate(new Date()),
     dayMoments: [],
@@ -109,6 +126,7 @@ Page({
       this.setData({
         month: resolvedMonth,
         summary,
+        monthFocusCards: buildMonthFocusCards(resolvedMonth, summary),
         selectedDate: fallbackDate,
         calendarWeeks: buildCalendarWeeks(resolvedMonth, momentsByDate, fallbackDate),
         dayMoments: momentsByDate[fallbackDate] || [],
@@ -133,6 +151,17 @@ Page({
 
   nextMonth() {
     this.switchMonth(1);
+  },
+
+  handleMonthFocusTap(e) {
+    const { role } = e.currentTarget.dataset;
+    if (role === 'prev') {
+      this.prevMonth();
+      return;
+    }
+    if (role === 'next') {
+      this.nextMonth();
+    }
   },
 
   selectDate(e) {

@@ -25,6 +25,13 @@
       </view>
     </view>
 
+    <view class="month-focus">
+      <view wx:for="{{monthFocusCards}}" wx:key="key" class="month-focus__card month-focus__card--{{item.role}}" data-role="{{item.key}}" bindtap="handleMonthFocusTap">
+        <view class="month-focus__label">{{item.label}}</view>
+        <view wx:if="{{item.role === 'main'}}" class="month-focus__summary">{{item.summaryText}}</view>
+      </view>
+    </view>
+
     <view class="calendar-panel">
       <view class="calendar-toolbar">
         <view class="calendar-toolbar__action" bindtap="prevMonth">‹ 上个月</view>

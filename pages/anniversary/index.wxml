@@ -71,62 +71,98 @@
     </view>
 
     <view class="panel">
-      <view class="panel__title">🔔 纪念日提醒</view>
-      <view class="panel__sub">当前以小程序内提醒为主，服务通知模板接入后可直接沿用这里的设置。</view>
-      <view class="reminder-actions">
-        <warm-button theme="{{reminderSettings.enabled ? 'primary' : 'light'}}" size="large" bind:action="toggleReminderEnabled">{{reminderSettings.enabled ? '提醒已开启' : '开启提醒'}}</warm-button>
-        <warm-button theme="light" size="large" bind:action="cycleReminderWindow">提前 {{reminderSettings.daysBefore}} 天</warm-button>
-      </view>
-
-      <view wx:if="{{reminderTips.length}}" class="reminder-list">
-        <view wx:for="{{reminderTips}}" wx:key="id" class="reminder-item">
-          <view class="reminder-item__title">{{item.title}}</view>
-          <view class="reminder-item__desc">{{item.desc}}</view>
-        </view>
-      </view>
-      <warm-empty-state wx:else customClass="list-empty" title="🌷 暂时没有临近提醒" desc="等纪念日靠近时，会在这里提前告诉你。"></warm-empty-state>
-    </view>
-
-    <view class="panel">
-      <view class="panel__title">🌸 新增纪念日</view>
-      <view class="panel__fields">
-        <warm-input
-          customClass="field-input"
-          value="{{anniversaryName}}"
-          placeholder="例如：第一次见面"
-          maxlength="20"
-          bind:input="handleAnniversaryNameInput"
-        ></warm-input>
-        <view class="picker-shell">
-          <view class="picker-input">📅 {{anniversaryDate}}</view>
-          <picker class="picker-shell__native" mode="date" value="{{anniversaryDate}}" bindchange="handleAnniversaryDateChange">
-            <view class="picker-shell__hit"></view>
-          </picker>
-        </view>
-      </view>
-      <warm-button theme="primary" size="large" bind:action="addAnniversary">❤️ 新增纪念日</warm-button>
-
       <view wx:if="{{anniversaries.length}}" class="list-block">
-        <view class="panel__sub">💕 已记录的重要日子</view>
-        <view wx:for="{{anniversaries}}" wx:key="id" class="list-item">
-          <view class="list-item__main">
-            <view class="list-item__title">{{item.name}}</view>
-            <view class="list-item__desc">{{item.date}} · {{item.diffLabel}}</view>
-            <view class="anniversary-progress">
+        <view class="panel__title">💕 已记录的重要日子</view>
+        <view class="panel__sub">把更重要的内容提到前面，直接看，不再左右翻卡片。</view>
+        <view class="anniversary-list">
+          <view wx:for="{{anniversaries}}" wx:key="id" class="anniversary-list-card">
+            <view class="anniversary-list-card__head">
+              <text class="anniversary-list-card__date">{{item.date}}</text>
+              <text class="anniversary-list-card__badge">{{item.progressLabel}}</text>
+            </view>
+            <view class="anniversary-list-card__title">{{item.name}}</view>
+            <view class="anniversary-list-card__days">{{item.anniversaryDaysText}}</view>
+            <view class="anniversary-progress anniversary-progress--focus">
               <view class="anniversary-progress__track">
                 <view class="anniversary-progress__value" style="width: {{item.progressPercent}}%;"></view>
               </view>
               <view class="anniversary-progress__meta">
-                <view class="anniversary-progress__label">{{item.progressLabel}}</view>
+                <view class="anniversary-progress__label">{{item.diffLabel}}</view>
                 <view class="anniversary-progress__percent">{{item.progressPercentText}}</view>
               </view>
             </view>
+            <view class="anniversary-list-card__actions">
+              <text class="anniversary-list-card__action" data-id="{{item.id}}" bindtap="removeAnniversary">移除这一天</text>
+            </view>
           </view>
-          <text class="list-item__action" data-id="{{item.id}}" bindtap="removeAnniversary">移除</text>
         </view>
       </view>
-
       <warm-empty-state wx:else customClass="list-empty" title="💕 还没有纪念日" desc="先写下一个只属于你们的重要日子。"></warm-empty-state>
+    </view>
+
+    <view class="panel reminder-panel {{reminderPanelExpanded ? 'reminder-panel--expanded' : ''}}">
+      <view class="reminder-panel__summary" bindtap="toggleReminderPanel">
+        <view class="reminder-panel__main">
+          <view class="panel__title panel__title--compact">🔔 纪念日提醒</view>
+          <view class="reminder-panel__status-row">
+            <text class="reminder-panel__status {{reminderSettings.enabled ? 'reminder-panel__status--active' : ''}}">{{reminderSettings.enabled ? '已开启提醒' : '提醒未开启'}}</text>
+            <text class="reminder-panel__window">提前 {{reminderSettings.daysBefore}} 天</text>
+            <text wx:if="{{reminderTips.length}}" class="reminder-panel__tip-count">{{reminderTips.length}} 条临近提醒</text>
+          </view>
+          <view class="reminder-panel__desc">{{reminderSettings.enabled ? (reminderTips.length ? '近期有值得注意的日子，点开可以直接查看。' : '先保持安静，等重要日子接近时再提醒你。') : '先放在这里，需要时再打开，不打断主内容阅读。'}}</view>
+        </view>
+        <view class="reminder-panel__toggle">{{reminderPanelExpanded ? '收起' : '展开'}}</view>
+      </view>
+
+      <block wx:if="{{reminderPanelExpanded}}">
+        <view class="reminder-actions reminder-actions--compact">
+          <warm-button theme="{{reminderSettings.enabled ? 'primary' : 'light'}}" size="large" bind:action="toggleReminderEnabled">{{reminderSettings.enabled ? '提醒已开启' : '开启提醒'}}</warm-button>
+          <warm-button theme="light" size="large" bind:action="cycleReminderWindow">提前 {{reminderSettings.daysBefore}} 天</warm-button>
+        </view>
+
+        <view wx:if="{{reminderTips.length}}" class="reminder-list">
+          <view wx:for="{{reminderTips}}" wx:key="id" class="reminder-item">
+            <view class="reminder-item__title">{{item.title}}</view>
+            <view class="reminder-item__desc">{{item.desc}}</view>
+          </view>
+        </view>
+        <view wx:else class="reminder-empty-state">
+          <view class="reminder-empty-state__title">🌷 暂时没有临近提醒</view>
+          <view class="reminder-empty-state__desc">等纪念日靠近时，会在这里提前告诉你。</view>
+        </view>
+      </block>
+    </view>
+
+    <view class="panel panel--editor">
+      <view class="panel__row panel__row--between">
+        <view>
+          <view class="panel__title panel__title--compact">🌸 新增纪念日</view>
+          <view class="panel__sub">先点按钮展开，再填写内容，页面会更清爽。</view>
+        </view>
+        <view class="panel__toggle" bindtap="toggleAnniversaryEditor">{{anniversaryEditorVisible ? '收起' : '新增'}}</view>
+      </view>
+
+      <block wx:if="{{anniversaryEditorVisible}}">
+        <view class="panel__fields panel__fields--editor">
+          <warm-input
+            customClass="field-input"
+            value="{{anniversaryName}}"
+            placeholder="例如：第一次见面"
+            maxlength="20"
+            bind:input="handleAnniversaryNameInput"
+          ></warm-input>
+          <view class="picker-shell">
+            <view class="picker-input">📅 {{anniversaryDate}}</view>
+            <picker class="picker-shell__native" mode="date" value="{{anniversaryDate}}" bindchange="handleAnniversaryDateChange">
+              <view class="picker-shell__hit"></view>
+            </picker>
+          </view>
+        </view>
+        <view class="panel__action panel__action--center">
+          <warm-button theme="primary" size="large" bind:action="addAnniversary">❤️ 新增纪念日</warm-button>
+        </view>
+      </block>
+      <view wx:else class="editor-collapsed-note">点右上角“新增”再填写纪念日名称和日期。</view>
     </view>
 
     <view class="warm-page-end"></view>

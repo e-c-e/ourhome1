@@ -107,6 +107,8 @@ Page({
     anniversaryName: '',
     anniversaryDate: formatDate(new Date()),
     anniversaries: [],
+    anniversaryEditorVisible: false,
+    reminderPanelExpanded: false,
     milestonePercent: 0,
     nextMilestone: 100,
     prevMilestone: 0,
@@ -145,12 +147,19 @@ Page({
             ...item,
             id: item._id,
             diffLabel: diff >= 0 ? `还有 ${diff + 1} 天` : `已经过去 ${Math.abs(diff) - 1} 天`,
+            anniversaryDaysText: `已经一起记住 ${getDaysBetween(item.date, today)} 天`,
+            daysLeft: annualProgress.daysLeft,
             progressPercent: annualProgress.progressPercent,
             progressPercentText: `${annualProgress.progressPercent.toFixed(1)}%`,
             progressLabel: annualProgress.progressLabel,
           };
         })
-        .sort((left, right) => left.date.localeCompare(right.date));
+        .sort((left, right) => {
+          if (left.daysLeft !== right.daysLeft) {
+            return left.daysLeft - right.daysLeft;
+          }
+          return left.date.localeCompare(right.date);
+        });
 
       this.setData({
         today,
@@ -218,6 +227,18 @@ Page({
     });
   },
 
+  toggleAnniversaryEditor() {
+    this.setData({
+      anniversaryEditorVisible: !this.data.anniversaryEditorVisible,
+    });
+  },
+
+  toggleReminderPanel() {
+    this.setData({
+      reminderPanelExpanded: !this.data.reminderPanelExpanded,
+    });
+  },
+
   async addAnniversary() {
     const name = this.data.anniversaryName.trim();
     if (!name) {
@@ -229,7 +250,10 @@ Page({
     }
 
     await addAnniversary(name, this.data.anniversaryDate);
-    this.setData({ anniversaryName: '' });
+    this.setData({
+      anniversaryName: '',
+      anniversaryEditorVisible: false,
+    });
     await this.loadPageData();
     wx.showToast({
       title: '纪念日已添加',

@@ -484,11 +484,43 @@
     color: rgba(92, 75, 58, 0.58);
   }
 
+  &__title--compact {
+    margin-bottom: 8rpx;
+  }
+
+  &__row {
+    display: flex;
+    gap: 16rpx;
+    align-items: center;
+  }
+
+  &__row--between {
+    justify-content: space-between;
+  }
+
   &__fields {
     display: flex;
     flex-direction: column;
     gap: 32rpx;
     margin-bottom: 12rpx;
+  }
+
+  &__fields--editor {
+    margin-top: 18rpx;
+  }
+
+  &__toggle {
+    flex-shrink: 0;
+    padding: 12rpx 22rpx;
+    border-radius: 999rpx;
+    font-size: 24rpx;
+    color: #c06f7b;
+    background: rgba(255, 241, 244, 0.92);
+  }
+
+  &__action--center {
+    display: flex;
+    justify-content: center;
   }
 
   .field-input,
@@ -505,6 +537,10 @@
 .reminder-actions {
   display: flex;
   gap: 16rpx;
+
+  &--compact {
+    margin-top: 18rpx;
+  }
 }
 
 .reminder-list {
@@ -533,8 +569,92 @@
   }
 }
 
+.reminder-panel {
+  background:
+    radial-gradient(circle at top right, rgba(255, 247, 214, 0.44), transparent 24%),
+    linear-gradient(180deg, rgba(255, 252, 246, 0.96) 0%, rgba(255, 248, 243, 0.94) 100%);
+  border: 2rpx solid rgba(255, 232, 196, 0.56);
+  box-shadow: 0 16rpx 38rpx rgba(225, 191, 142, 0.1), inset 0 0 0 2rpx rgba(255, 255, 255, 0.34);
+
+  &__summary {
+    display: flex;
+    justify-content: space-between;
+    gap: 16rpx;
+    align-items: flex-start;
+  }
+
+  &__main {
+    min-width: 0;
+    flex: 1;
+  }
+
+  &__status-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10rpx;
+    margin-top: 6rpx;
+  }
+
+  &__status,
+  &__window,
+  &__tip-count {
+    padding: 8rpx 14rpx;
+    border-radius: 999rpx;
+    font-size: 22rpx;
+    color: rgba(92, 75, 58, 0.66);
+    background: rgba(255, 255, 255, 0.72);
+  }
+
+  &__status--active {
+    color: #bf7d3c;
+    background: rgba(255, 240, 214, 0.92);
+  }
+
+  &__desc {
+    margin-top: 12rpx;
+    font-size: 24rpx;
+    line-height: 1.7;
+    color: rgba(92, 75, 58, 0.6);
+  }
+
+  &__toggle {
+    flex-shrink: 0;
+    padding: 12rpx 20rpx;
+    border-radius: 999rpx;
+    font-size: 24rpx;
+    color: #b88249;
+    background: rgba(255, 246, 227, 0.92);
+  }
+}
+
+.reminder-empty-state {
+  margin-top: 18rpx;
+  padding: 22rpx;
+  border-radius: 24rpx;
+  background: rgba(255, 255, 255, 0.7);
+  text-align: center;
+
+  &__title {
+    font-size: 28rpx;
+    font-weight: 700;
+    color: #8e6b4a;
+  }
+
+  &__desc {
+    margin-top: 10rpx;
+    font-size: 24rpx;
+    line-height: 1.7;
+    color: rgba(92, 75, 58, 0.56);
+  }
+}
+
 .anniversary-progress {
   margin-top: 14rpx;
+
+  &--focus {
+    margin-top: 20rpx;
+    text-align: left;
+  }
 
   &__track {
     position: relative;
@@ -584,7 +704,91 @@
 }
 
 .list-block {
-  margin-top: 20rpx;
+  margin-top: 0;
+}
+
+.anniversary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+  margin-top: 18rpx;
+}
+
+.anniversary-list-card {
+  padding: 28rpx 24rpx 24rpx;
+  border-radius: 30rpx;
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.82), transparent 28%),
+    linear-gradient(180deg, rgba(255, 247, 249, 0.98) 0%, rgba(255, 252, 248, 0.95) 100%);
+  border: 2rpx solid rgba(255, 220, 228, 0.58);
+  box-shadow: 0 18rpx 38rpx rgba(255, 183, 194, 0.1), inset 0 0 0 3rpx rgba(255, 255, 255, 0.64);
+
+  &__head {
+    display: flex;
+    justify-content: space-between;
+    gap: 14rpx;
+    align-items: center;
+  }
+
+  &__date {
+    font-size: 24rpx;
+    color: rgba(92, 75, 58, 0.56);
+    letter-spacing: 1rpx;
+  }
+
+  &__badge {
+    flex-shrink: 0;
+    padding: 10rpx 18rpx;
+    border-radius: 999rpx;
+    font-size: 22rpx;
+    color: #fff8fb;
+    background: linear-gradient(135deg, #ff9eaa 0%, #ffb7c1 100%);
+    box-shadow: 0 10rpx 22rpx rgba(255, 158, 170, 0.18);
+  }
+
+  &__title {
+    margin-top: 14rpx;
+    font-size: 38rpx;
+    font-weight: 700;
+    line-height: 1.4;
+    color: #5c4b3a;
+  }
+
+  &__days {
+    margin-top: 12rpx;
+    font-size: 26rpx;
+    line-height: 1.7;
+    color: rgba(92, 75, 58, 0.7);
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 18rpx;
+  }
+
+  &__action {
+    padding: 10rpx 18rpx;
+    border-radius: 999rpx;
+    color: #c06f7b;
+    font-size: 22rpx;
+    background: rgba(255, 241, 244, 0.92);
+  }
+}
+
+.panel--editor {
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.editor-collapsed-note {
+  margin-top: 18rpx;
+  font-size: 24rpx;
+  line-height: 1.7;
+  color: rgba(92, 75, 58, 0.56);
+}
+
+.panel__action--center .t-button {
+  min-width: 280rpx;
 }
 
 .list-item {
@@ -629,6 +833,29 @@
 }
 
 @media (max-width: 720rpx) {
+  .reminder-panel {
+    &__summary {
+      flex-direction: column;
+    }
+
+    &__toggle {
+      align-self: flex-end;
+    }
+  }
+
+  .anniversary-list-card {
+    padding: 26rpx 20rpx 22rpx;
+
+    &__title {
+      font-size: 34rpx;
+    }
+
+    &__head {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+
   .list-item {
     grid-template-columns: 1fr;
     gap: 12rpx;

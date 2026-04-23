@@ -72,9 +72,11 @@
       <swiper
         class="memory-carousel"
         current="{{memoryFocusIndex}}"
-        previous-margin="80rpx"
-        next-margin="80rpx"
+        previous-margin="56rpx"
+        next-margin="56rpx"
         circular="{{recentMoments.length > 1}}"
+        duration="360"
+        skip-hidden-item-layout="{{true}}"
         bindchange="handleMemorySwiperChange"
       >
         <block wx:for="{{recentMoments}}" wx:key="id">
@@ -82,7 +84,7 @@
             <view class="memory-carousel__item {{index === memoryFocusIndex ? 'memory-carousel__item--active' : 'memory-carousel__item--side'}}">
               <view class="memory-card {{!item.coverImage ? 'memory-card--text-only' : ''}}" data-id="{{item.id}}" bindtap="goMomentDetail">
                 <view wx:if="{{item.coverImage}}" class="memory-card__media-wrap">
-                  <image class="memory-card__media" src="{{item.coverImage}}" mode="aspectFill" />
+                  <image class="memory-card__media" src="{{item.coverImage}}" mode="aspectFill" lazy-load="{{true}}" />
                 </view>
                 <view wx:else class="memory-card__placeholder">
                   <text class="memory-card__placeholder-icon">💌</text>

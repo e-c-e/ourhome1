@@ -28,7 +28,7 @@ export async function initCloud() {
 export async function callCloudFunction(name, data = {}) {
   await initCloud();
 
-  return new Promise((resolve, reject) => {
+  const invoke = () => new Promise((resolve, reject) => {
     wx.cloud.callFunction({
       name,
       data,
@@ -36,6 +36,24 @@ export async function callCloudFunction(name, data = {}) {
       fail: reject,
     });
   });
+
+  try {
+    return await invoke();
+  } catch (error) {
+    const message = (error && (error.errMsg || error.message)) || '';
+    const isTimeout = /timeout/i.test(message);
+    if (!isTimeout) {
+      throw error;
+    }
+
+    try {
+      return await invoke();
+    } catch (retryError) {
+      const wrappedError = new Error('云端响应超时，请重新部署云函数后再试一次');
+      wrappedError.cause = retryError;
+      throw wrappedError;
+    }
+  }
 }
 
 function uploadSingleImage(filePath, index) {

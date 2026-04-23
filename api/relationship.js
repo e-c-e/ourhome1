@@ -80,6 +80,13 @@ export function removeWish(id) {
   });
 }
 
+export function setWishStored(id, isStored) {
+  return callCloudFunction('relationship', {
+    action: 'setWishStored',
+    data: { id, isStored },
+  });
+}
+
 export async function createMoment(payload) {
   const uploadedImages = await uploadImagesToCloud(payload.images || []);
   return callCloudFunction('relationship', {

@@ -56,47 +56,62 @@
       <view class="panel__title">🌷 宠物伙伴</view>
       <view class="panel__desc">回忆、纪念日和心愿都会慢慢变成小岛的能量。先照顾好今天的两位住民吧。</view>
 
-      <view class="pet-list">
-        <view wx:for="{{pets}}" wx:key="id" class="pet-card pet-card--{{index % 2 === 0 ? 'pink' : 'blue'}}">
-          <view class="pet-card__head">
-            <view class="pet-card__avatar">{{item.skin.emoji || item.avatar}}</view>
-            <view class="pet-card__meta">
-              <view class="pet-card__name">{{item.name}} · Lv.{{item.level}}</view>
-              <view class="pet-card__desc">{{item.skin.name}} · {{item.stageLabel}}</view>
-            </view>
-          </view>
+      <swiper
+        class="pet-swiper"
+        current="{{activePetIndex}}"
+        previous-margin="84rpx"
+        next-margin="84rpx"
+        circular="{{pets.length > 1}}"
+        bindchange="handlePetSwiperChange"
+      >
+        <block wx:for="{{pets}}" wx:key="id">
+          <swiper-item>
+            <view class="pet-swiper__item {{index === activePetIndex ? 'pet-swiper__item--active' : 'pet-swiper__item--side'}}">
+              <view class="pet-card pet-card--{{index % 2 === 0 ? 'pink' : 'blue'}}">
+                <view class="pet-card__head">
+                  <view class="pet-card__avatar">{{item.skin.emoji || item.avatar}}</view>
+                  <view class="pet-card__meta">
+                    <view class="pet-card__name">{{item.name}} · Lv.{{item.level}}</view>
+                    <view class="pet-card__desc">{{item.skin.name}} · {{item.stageLabel}}</view>
+                  </view>
+                </view>
 
-          <view class="pet-card__mood">{{item.mood}}</view>
+                <view class="pet-card__mood">{{item.mood}}</view>
 
-          <view class="pet-progress">
-            <view class="pet-progress__row">
-              <text class="pet-progress__label">亲密度</text>
-              <text class="pet-progress__value">{{item.progressPercent}}% · {{item.intimacy}} / {{item.nextLevelIntimacy}}</text>
-            </view>
-            <view class="pet-progress__track">
-              <view class="pet-progress__fill" style="width: {{item.progressPercent}}%;"></view>
-            </view>
-          </view>
+                <view class="pet-progress">
+                  <view class="pet-progress__row">
+                    <text class="pet-progress__label">亲密度</text>
+                    <text class="pet-progress__value">{{item.progressPercent}}% · {{item.intimacy}} / {{item.nextLevelIntimacy}}</text>
+                  </view>
+                  <view class="pet-progress__track">
+                    <view class="pet-progress__fill" style="width: {{item.progressPercent}}%;"></view>
+                  </view>
+                </view>
 
-          <view class="pet-progress pet-progress--satiety">
-            <view class="pet-progress__row">
-              <text class="pet-progress__label">饱腹值</text>
-              <text class="pet-progress__value">{{item.satiety}}%</text>
-            </view>
-            <view class="pet-progress__track">
-              <view class="pet-progress__fill pet-progress__fill--satiety" style="width: {{item.satiety}}%;"></view>
-            </view>
-          </view>
+                <view class="pet-progress pet-progress--satiety">
+                  <view class="pet-progress__row">
+                    <text class="pet-progress__label">饱腹值</text>
+                    <text class="pet-progress__value">{{item.satiety}}%</text>
+                  </view>
+                  <view class="pet-progress__track">
+                    <view class="pet-progress__fill pet-progress__fill--satiety" style="width: {{item.satiety}}%;"></view>
+                  </view>
+                </view>
 
-          <view class="pet-card__actions">
-            <view class="pet-action pet-action--primary" data-id="{{item.id}}" bindtap="handleFeedPet">🍪 投喂</view>
-            <view class="pet-action pet-action--light" data-id="{{item.id}}" bindtap="handleInteractPet">🫶 贴贴</view>
-            <view class="pet-action pet-action--light" data-id="{{item.id}}" bindtap="handleChangeSkin">✨ 换皮肤</view>
-          </view>
-        </view>
+                <view class="pet-card__actions">
+                  <view class="pet-action pet-action--primary" data-id="{{item.id}}" bindtap="handleFeedPet">🍪 投喂</view>
+                  <view class="pet-action pet-action--light" data-id="{{item.id}}" bindtap="handleInteractPet">🫶 贴贴</view>
+                  <view class="pet-action pet-action--light" data-id="{{item.id}}" bindtap="handleChangeSkin">✨ 换皮肤</view>
+                </view>
+              </view>
+            </view>
+          </swiper-item>
+        </block>
+      </swiper>
+
+      <view class="panel__action panel__action--center">
+        <warm-button theme="primary" size="large" bind:action="goSpaceSettings">❤️ 打开空间设置</warm-button>
       </view>
-
-      <warm-button theme="primary" size="large" bind:action="goSpaceSettings">❤️ 打开空间设置</warm-button>
     </view>
 
     <view class="warm-page-end"></view>

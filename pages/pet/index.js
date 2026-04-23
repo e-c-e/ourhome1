@@ -19,6 +19,7 @@ Page({
       wishCount: 0,
     },
     pets: [],
+    activePetIndex: 0,
     islandLevel: 1,
     actionKey: '',
     loading: true,
@@ -40,6 +41,7 @@ Page({
         profile,
         stats,
         pets,
+        activePetIndex: 0,
         islandLevel,
         loading: false,
       });
@@ -54,6 +56,12 @@ Page({
   goSpaceSettings() {
     wx.navigateTo({
       url: '/pages/my/index',
+    });
+  },
+
+  handlePetSwiperChange(e) {
+    this.setData({
+      activePetIndex: e.detail.current || 0,
     });
   },
 
