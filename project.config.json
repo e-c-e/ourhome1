@@ -81,7 +81,6 @@
           "name": "release",
           "pathName": "pages/release/index",
           "query": "",
-          "query": "",
           "launchMode": "default",
           "scene": null
         }
