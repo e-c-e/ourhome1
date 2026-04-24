@@ -23,7 +23,7 @@
     </view>
 
     <view wx:if="{{status === 'denied'}}" class="auth-card__tips">
-      当前版本会自动允许前两位进入空间的用户完成绑定，后续账号需要在 `users` 集合中已存在才可进入。
+      通行证验证失败！
     </view>
 
     <view wx:if="{{status === 'error'}}" class="auth-card__tips">

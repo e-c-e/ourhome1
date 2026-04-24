@@ -18,7 +18,9 @@
     </view>
 
     <view wx:if="{{moment.images.length}}" class="gallery-showcase">
-      <image class="gallery-showcase__main" src="{{currentImage || moment.images[0]}}" mode="aspectFill" data-current="{{currentImage || moment.images[0]}}" bindtap="previewImage" />
+      <view class="gallery-showcase__frame">
+        <image class="gallery-showcase__main" src="{{currentImage || moment.images[0]}}" mode="aspectFit" data-current="{{currentImage || moment.images[0]}}" bindtap="previewImage" />
+      </view>
       <view class="gallery-showcase__count">共 {{moment.imageCount}} 张</view>
       <scroll-view scroll-x="true" class="gallery-strip">
         <image wx:for="{{moment.images}}" wx:key="*this" class="gallery-strip__item {{item === (currentImage || moment.images[0]) ? 'gallery-strip__item--active' : ''}}" src="{{item}}" mode="aspectFill" data-src="{{item}}" bindtap="selectImage" />

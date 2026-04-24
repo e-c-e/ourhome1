@@ -105,12 +105,14 @@
 
       <view wx:if="{{dayMoments.length}}" class="day-list">
         <view wx:for="{{dayMoments}}" wx:key="_id" class="day-card" data-id="{{item._id}}" bindtap="goMomentDetail">
-          <swiper wx:if="{{item.images && item.images.length > 1}}" class="day-card__swiper" vertical="{{true}}" circular="{{true}}" indicator-dots="{{true}}" indicator-color="rgba(255,255,255,0.48)" indicator-active-color="#ffffff">
+          <swiper wx:if="{{item.images && item.images.length > 1}}" class="day-card__swiper" vertical="{{true}}" circular="{{true}}" indicator-dots="{{true}}" indicator-color="rgba(255,255,255,0.48)" indicator-active-color="#ffffff" previous-margin="24rpx" next-margin="24rpx" duration="480" easing-function="easeOutCubic" skip-hidden-item-layout="{{true}}">
             <swiper-item wx:for="{{item.images}}" wx:key="*this" wx:for-item="photo">
-              <image class="day-card__cover" src="{{photo}}" mode="aspectFill" data-images="{{item.images}}" data-current="{{photo}}" catchtap="previewMomentImages"></image>
+              <view class="day-card__slide-card">
+                <image class="day-card__cover" src="{{photo}}" mode="aspectFit" data-images="{{item.images}}" data-current="{{photo}}" catchtap="previewMomentImages"></image>
+              </view>
             </swiper-item>
           </swiper>
-          <image wx:elif="{{item.cover}}" class="day-card__cover" src="{{item.cover}}" mode="aspectFill"></image>
+          <image wx:elif="{{item.cover}}" class="day-card__cover" src="{{item.cover}}" mode="aspectFit"></image>
           <view class="day-card__body">
             <view class="day-card__meta">
               <text class="day-card__mood">💗 {{item.mood}}</text>
@@ -129,22 +131,24 @@
       <view wx:for="{{moments}}" wx:key="id" class="wall-entry" data-id="{{item.id}}" bindtap="goMomentDetail">
         <view wx:if="{{reactionMomentId === item.id}}" class="wall-entry__reaction">{{reactionEmoji}}</view>
         <view class="wall-entry__gallery" wx:if="{{item.images && item.images.length > 1}}">
-          <swiper class="wall-entry__swiper" vertical="{{true}}" circular="{{true}}" indicator-dots="{{true}}" indicator-color="rgba(255,255,255,0.38)" indicator-active-color="#ffffff">
+          <swiper class="wall-entry__swiper" vertical="{{true}}" circular="{{true}}" indicator-dots="{{true}}" indicator-color="rgba(255,255,255,0.38)" indicator-active-color="#ffffff" previous-margin="28rpx" next-margin="28rpx" duration="520" easing-function="easeOutCubic" skip-hidden-item-layout="{{true}}">
             <swiper-item wx:for="{{item.images}}" wx:key="*this" wx:for-item="photo">
-              <image
-                class="wall-entry__thumb"
-                src="{{photo}}"
-                mode="aspectFill"
-                data-images="{{item.images}}"
-                data-current="{{photo}}"
-                catchtap="previewMomentImages"
-              />
+              <view class="wall-entry__slide-card">
+                <image
+                  class="wall-entry__thumb"
+                  src="{{photo}}"
+                  mode="aspectFit"
+                  data-images="{{item.images}}"
+                  data-current="{{photo}}"
+                  catchtap="previewMomentImages"
+                />
+              </view>
             </swiper-item>
           </swiper>
           <view class="wall-entry__gallery-tip">共 {{item.imageCount}} 张 · 上下翻看</view>
         </view>
         <view wx:elif="{{item.cover}}" class="wall-entry__cover-wrap">
-          <image class="wall-entry__cover" src="{{item.cover}}" mode="aspectFill" />
+          <image class="wall-entry__cover" src="{{item.cover}}" mode="aspectFit" />
         </view>
 
         <view class="wall-entry__body">
