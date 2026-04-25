@@ -1,4 +1,5 @@
 import { callCloudFunction, uploadImagesToCloud } from '../utils/cloud';
+import { getMomentNotificationConfig } from '../config/notification';
 
 export function loginToSpace() {
   return callCloudFunction('auth');
@@ -94,7 +95,26 @@ export async function createMoment(payload) {
     data: {
       ...payload,
       images: uploadedImages,
+      notificationConfig: getMomentNotificationConfig(),
     },
+  });
+}
+
+export function saveMomentNotificationSubscription(status) {
+  const notificationConfig = getMomentNotificationConfig();
+  return callCloudFunction('relationship', {
+    action: 'saveMomentNotificationSubscription',
+    data: {
+      status,
+      templateId: notificationConfig.templateId,
+    },
+  });
+}
+
+export function markNotificationsRead(ids = []) {
+  return callCloudFunction('relationship', {
+    action: 'markNotificationsRead',
+    data: { ids },
   });
 }
 

@@ -8,6 +8,7 @@ const SPACE_COLLECTION = 'space';
 const MOMENTS_COLLECTION = 'moments';
 const ANNIVERSARIES_COLLECTION = 'anniversaries';
 const WISHES_COLLECTION = 'wishes';
+const NOTIFICATIONS_COLLECTION = 'notifications';
 const SPACE_DOC_ID = 'main';
 const MAX_SPACE_MEMBERS = 2;
 
@@ -124,6 +125,15 @@ async function ensureCollectionCreated(collectionName) {
 
 async function ensureCollectionsReady() {
   const spaceDoc = await db.collection(SPACE_COLLECTION).doc(SPACE_DOC_ID).get();
+
+  try {
+    await ensureCollectionCreated(NOTIFICATIONS_COLLECTION);
+  } catch (error) {
+    if (!isCollectionMissingError(error)) {
+      throw error;
+    }
+  }
+
   if (spaceDoc.data.collectionsReady) return;
 
   await ensureCollectionCreated(MOMENTS_COLLECTION);
@@ -192,6 +202,7 @@ exports.main = async () => {
       nickname,
       avatarUrl: '',
       role,
+      subscriptions: {},
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
@@ -208,7 +219,7 @@ exports.main = async () => {
     };
   } catch (error) {
     if (isCollectionMissingError(error)) {
-      throw new Error('请先在云开发控制台的数据库中手动创建集合：users、space、moments、anniversaries、wishes');
+      throw new Error('请先在云开发控制台的数据库中手动创建集合：users、space、moments、anniversaries、wishes、notifications');
     }
     throw error;
   }

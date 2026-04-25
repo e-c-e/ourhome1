@@ -1,4 +1,5 @@
 import { addMomentComment, deleteMoment, fetchMomentDetail, removeMomentComment, toggleMomentLike } from '../../api/relationship';
+import { STORAGE_KEYS, markDirtyFlags } from '../../utils/couple';
 import { ensureAuthorizedPage } from '../../utils/pageAuth';
 
 function formatTimeLabel(timestamp) {
@@ -96,6 +97,7 @@ Page({
     this.setData({ likeLoading: true });
     try {
       const result = await toggleMomentLike(this.data.id);
+      markDirtyFlags(STORAGE_KEYS.WALL_DIRTY);
       this.setData({
         moment: {
           ...this.data.moment,
@@ -126,6 +128,7 @@ Page({
     this.setData({ commenting: true });
     try {
       const result = await addMomentComment(this.data.id, content);
+      markDirtyFlags(STORAGE_KEYS.WALL_DIRTY);
       this.setData({
         commentText: '',
         moment: {
@@ -150,6 +153,7 @@ Page({
 
     try {
       const result = await removeMomentComment(this.data.id, commentId);
+      markDirtyFlags(STORAGE_KEYS.WALL_DIRTY);
       this.setData({
         moment: {
           ...this.data.moment,
@@ -177,7 +181,8 @@ Page({
         this.setData({ deleting: true });
         try {
           await deleteMoment(this.data.id);
-          wx.setStorageSync('couple_notice', '回忆已删除');
+          wx.setStorageSync(STORAGE_KEYS.NOTICE, '回忆已删除');
+          markDirtyFlags(STORAGE_KEYS.HOME_DIRTY, STORAGE_KEYS.WALL_DIRTY, STORAGE_KEYS.DIARY_DIRTY);
           wx.switchTab({
             url: '/pages/home/index',
           });

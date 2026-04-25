@@ -1,7 +1,11 @@
 import { fetchDiaryData, fetchHomeData, toggleMomentLike } from '../../api/relationship';
-import { formatDate } from '../../utils/couple';
+import { STORAGE_KEYS, consumeDirtyFlag, formatDate } from '../../utils/couple';
 import { ensureAuthorizedPage } from '../../utils/pageAuth';
 const WEEK_LABELS = ['日', '一', '二', '三', '四', '五', '六'];
+
+function shouldLoadWallPage(page) {
+  return page.data.loading || !page.data.moments.length || consumeDirtyFlag(STORAGE_KEYS.WALL_DIRTY);
+}
 
 function formatMonthValue(date = new Date()) {
   const year = date.getFullYear();
@@ -63,6 +67,32 @@ function buildCalendarWeeks(monthText, momentsByDate, selectedDate) {
   return weeks;
 }
 
+function mapWallMoment(item) {
+  return {
+    id: item._id,
+    title: item.title || '今天的记录',
+    content: item.content || '写下了一段新的回忆。',
+    mood: item.mood || '日常',
+    date: item.date || '',
+    cover: item.cover || '',
+    previewImages: (item.images || []).slice(0, 3),
+    images: item.images || [],
+    imageCount: item.imageCount || (item.images || []).length,
+    likeCount: item.likeCount || 0,
+    commentCount: item.commentCount || 0,
+    likedByMe: !!item.likedByMe,
+    locationText: item.location && item.location.name ? item.location.name : '',
+    activeImageIndex: 0,
+  };
+}
+
+function mapDayMoment(item) {
+  return {
+    ...item,
+    activeImageIndex: Number(item.activeImageIndex) || 0,
+  };
+}
+
 Page({
   data: {
     weekLabels: WEEK_LABELS,
@@ -86,11 +116,18 @@ Page({
   async onShow() {
     const authResult = await ensureAuthorizedPage();
     if (!authResult) return;
-    await this.loadPageData();
+    if (shouldLoadWallPage(this)) {
+      await this.loadPageData({ silent: !this.data.loading });
+    }
   },
 
-  async loadPageData() {
-    this.setData({ loading: true, errorMessage: '' });
+  async loadPageData(options = {}) {
+    const { silent = false } = options;
+    if (silent) {
+      this.setData({ errorMessage: '' });
+    } else {
+      this.setData({ loading: true, errorMessage: '' });
+    }
 
     try {
       const currentMonth = this.data.month || formatMonthValue(new Date());
@@ -116,22 +153,8 @@ Page({
         summary,
         selectedDate: fallbackDate,
         calendarWeeks: buildCalendarWeeks(resolvedMonth, momentsByDate, fallbackDate),
-        dayMoments: momentsByDate[fallbackDate] || [],
-        moments: sortedMoments.map((item) => ({
-          id: item._id,
-          title: item.title || '今天的记录',
-          content: item.content || '写下了一段新的回忆。',
-          mood: item.mood || '日常',
-          date: item.date || '',
-          cover: item.cover || '',
-          previewImages: (item.images || []).slice(0, 3),
-          images: item.images || [],
-          imageCount: item.imageCount || (item.images || []).length,
-          likeCount: item.likeCount || 0,
-          commentCount: item.commentCount || 0,
-          likedByMe: !!item.likedByMe,
-          locationText: item.location && item.location.name ? item.location.name : '',
-        })),
+        dayMoments: (momentsByDate[fallbackDate] || []).map(mapDayMoment),
+        moments: sortedMoments.map(mapWallMoment),
         loading: false,
       });
     } catch (error) {
@@ -186,7 +209,7 @@ Page({
         summary,
         selectedDate: fallbackDate,
         calendarWeeks: buildCalendarWeeks(resolvedMonth, momentsByDate, fallbackDate),
-        dayMoments: momentsByDate[fallbackDate] || [],
+        dayMoments: (momentsByDate[fallbackDate] || []).map(mapDayMoment),
       });
     } catch (error) {
       wx.showToast({
@@ -257,6 +280,40 @@ Page({
     } finally {
       this.setData({ likingId: '' });
     }
+  },
+
+  handleDaySwiperChange(e) {
+    const { id } = e.currentTarget.dataset;
+    const activeImageIndex = Number(e.detail.current) || 0;
+    if (!id) return;
+
+    this.setData({
+      dayMoments: this.data.dayMoments.map((item) => (
+        `${item._id}` === `${id}`
+          ? {
+            ...item,
+            activeImageIndex,
+          }
+          : item
+      )),
+    });
+  },
+
+  handleWallSwiperChange(e) {
+    const { id } = e.currentTarget.dataset;
+    const activeImageIndex = Number(e.detail.current) || 0;
+    if (!id) return;
+
+    this.setData({
+      moments: this.data.moments.map((item) => (
+        item.id === id
+          ? {
+            ...item,
+            activeImageIndex,
+          }
+          : item
+      )),
+    });
   },
 
   onUnload() {

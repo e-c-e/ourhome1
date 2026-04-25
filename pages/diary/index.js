@@ -93,6 +93,7 @@ Page({
     monthFocusCards: [],
     calendarWeeks: [],
     selectedDate: formatDate(new Date()),
+    monthMomentsByDate: {},
     dayMoments: [],
     loading: true,
     errorMessage: '',
@@ -128,6 +129,7 @@ Page({
         summary,
         monthFocusCards: buildMonthFocusCards(resolvedMonth, summary),
         selectedDate: fallbackDate,
+        monthMomentsByDate: momentsByDate,
         calendarWeeks: buildCalendarWeeks(resolvedMonth, momentsByDate, fallbackDate),
         dayMoments: momentsByDate[fallbackDate] || [],
         loading: false,
@@ -175,10 +177,8 @@ Page({
     this.setData({
       selectedDate: date,
       calendarWeeks,
-      dayMoments: (this.data.dayMoments && this.data.dayMoments.filter(() => false)) || [],
+      dayMoments: this.data.monthMomentsByDate[date] || [],
     });
-
-    this.loadDiaryData(this.data.month, date);
   },
 
   goMomentDetail(e) {

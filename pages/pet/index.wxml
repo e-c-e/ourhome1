@@ -59,9 +59,11 @@
       <swiper
         class="pet-swiper"
         current="{{activePetIndex}}"
-        previous-margin="84rpx"
-        next-margin="84rpx"
+        previous-margin="98rpx"
+        next-margin="98rpx"
         circular="{{pets.length > 1}}"
+        duration="600"
+        easing-function="easeInOutCubic"
         bindchange="handlePetSwiperChange"
       >
         <block wx:for="{{pets}}" wx:key="id">

@@ -72,10 +72,11 @@
       <swiper
         class="memory-carousel"
         current="{{memoryFocusIndex}}"
-        previous-margin="56rpx"
-        next-margin="56rpx"
+        previous-margin="72rpx"
+        next-margin="72rpx"
         circular="{{recentMoments.length > 1}}"
-        duration="360"
+        duration="560"
+        easing-function="easeInOutCubic"
         skip-hidden-item-layout="{{true}}"
         bindchange="handleMemorySwiperChange"
       >
@@ -109,11 +110,82 @@
       </swiper>
     </view>
 
+    <view class="notice-panel">
+      <view class="notice-panel__head">
+        <view>
+          <view class="notice-panel__title">🔔 提醒中心</view>
+          <view class="notice-panel__desc">记录今天和记录这一天保存成功后，会从同一个云端入口触发提醒。</view>
+        </view>
+        <view wx:if="{{unreadNotificationCount}}" class="notice-panel__count">{{unreadNotificationCount}}</view>
+      </view>
+
+      <view class="notice-panel__subscribe">
+        <view>
+          <view class="notice-panel__subscribe-title">微信提醒</view>
+          <view class="notice-panel__subscribe-desc">{{momentNotificationText}}</view>
+        </view>
+        <view class="notice-panel__subscribe-action" bindtap="enableMomentNotification">
+          {{momentNotification.enabled ? '重新授权' : '开启提醒'}}
+        </view>
+      </view>
+
+      <view wx:if="{{notifications.length}}" class="notice-list">
+        <view wx:for="{{notifications}}" wx:key="id" class="notice-item {{!item.isRead ? 'notice-item--unread' : ''}}" data-id="{{item.id}}" data-moment-id="{{item.momentId}}" data-is-read="{{item.isRead}}" bindtap="handleNotificationTap">
+          <view class="notice-item__main">
+            <view class="notice-item__title-row">
+              <text class="notice-item__title">{{item.title}}</text>
+              <text class="notice-item__time">{{item.createdAtText}}</text>
+            </view>
+            <view class="notice-item__content">{{item.content}}</view>
+          </view>
+        </view>
+        <view wx:if="{{unreadNotificationCount}}" class="notice-panel__footer">
+          <view class="notice-panel__mark" bindtap="markAllNotificationsRead">全部标记已读</view>
+        </view>
+      </view>
+      <view wx:else class="notice-panel__empty">对方发布新记录后，站内提醒会先显示在这里。</view>
+    </view>
+
     <view class="warm-page-end"></view>
   </block>
 
   <block wx:else>
     <warm-empty-state customClass="home-empty" title="💕 还没有记录" desc="点下方按钮，写下第一条属于你们的回忆。"></warm-empty-state>
+    <view class="notice-panel">
+      <view class="notice-panel__head">
+        <view>
+          <view class="notice-panel__title">🔔 提醒中心</view>
+          <view class="notice-panel__desc">记录今天和记录这一天保存成功后，会从同一个云端入口触发提醒。</view>
+        </view>
+        <view wx:if="{{unreadNotificationCount}}" class="notice-panel__count">{{unreadNotificationCount}}</view>
+      </view>
+
+      <view class="notice-panel__subscribe">
+        <view>
+          <view class="notice-panel__subscribe-title">微信提醒</view>
+          <view class="notice-panel__subscribe-desc">{{momentNotificationText}}</view>
+        </view>
+        <view class="notice-panel__subscribe-action" bindtap="enableMomentNotification">
+          {{momentNotification.enabled ? '重新授权' : '开启提醒'}}
+        </view>
+      </view>
+
+      <view wx:if="{{notifications.length}}" class="notice-list">
+        <view wx:for="{{notifications}}" wx:key="id" class="notice-item {{!item.isRead ? 'notice-item--unread' : ''}}" data-id="{{item.id}}" data-moment-id="{{item.momentId}}" data-is-read="{{item.isRead}}" bindtap="handleNotificationTap">
+          <view class="notice-item__main">
+            <view class="notice-item__title-row">
+              <text class="notice-item__title">{{item.title}}</text>
+              <text class="notice-item__time">{{item.createdAtText}}</text>
+            </view>
+            <view class="notice-item__content">{{item.content}}</view>
+          </view>
+        </view>
+        <view wx:if="{{unreadNotificationCount}}" class="notice-panel__footer">
+          <view class="notice-panel__mark" bindtap="markAllNotificationsRead">全部标记已读</view>
+        </view>
+      </view>
+      <view wx:else class="notice-panel__empty">对方发布新记录后，站内提醒会先显示在这里。</view>
+    </view>
     <view class="warm-page-end"></view>
   </block>
 

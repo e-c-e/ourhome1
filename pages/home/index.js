@@ -1,6 +1,23 @@
-import { fetchHomeData, updateRelationshipStartDate } from '../../api/relationship';
-import { STORAGE_KEYS, formatDate, getDaysBetween } from '../../utils/couple';
+import { fetchHomeData, markNotificationsRead, saveMomentNotificationSubscription, updateRelationshipStartDate } from '../../api/relationship';
+import { getMomentNotificationConfig } from '../../config/notification';
+import { STORAGE_KEYS, consumeDirtyFlag, formatDate, getDaysBetween } from '../../utils/couple';
 import { ensureAuthorizedPage } from '../../utils/pageAuth';
+
+function shouldLoadHomePage(page) {
+  return page.data.loading || !page.data.moments.length || consumeDirtyFlag(STORAGE_KEYS.HOME_DIRTY);
+}
+
+function getMomentNotificationText(notification = {}) {
+  if (notification.enabled) return '微信提醒已开启';
+  if (!notification.templateId) return '尚未配置订阅模板';
+  if (notification.status === 'reject') return '你还没有开启微信提醒';
+  return '开启微信提醒后，对方发记录时会收到微信通知';
+}
+
+function isUnknownCloudActionError(error) {
+  const message = `${(error && error.message) || ''} ${(error && error.errMsg) || ''}`;
+  return message.includes('UNKNOWN_ACTION:saveMomentNotificationSubscription');
+}
 
 Page({
   data: {
@@ -16,8 +33,17 @@ Page({
     latestDate: '',
     moments: [],
     recentMoments: [],
+    notifications: [],
+    unreadNotificationCount: 0,
+    momentNotification: {
+      enabled: false,
+      templateId: '',
+      status: 'unknown',
+    },
+    momentNotificationText: getMomentNotificationText(),
     memoryFocusIndex: 0,
     petIslandHint: '宠物岛功能暂未开启，先把今天的回忆好好存起来。',
+    notificationSaving: false,
     loading: true,
     errorMessage: '',
   },
@@ -26,15 +52,22 @@ Page({
     const authResult = await ensureAuthorizedPage();
     if (!authResult) return;
 
-    await this.loadHomeData();
+    if (shouldLoadHomePage(this)) {
+      await this.loadHomeData({ silent: !this.data.loading });
+    }
     this.showPendingNotice();
   },
 
-  async loadHomeData() {
-    this.setData({ loading: true, errorMessage: '' });
+  async loadHomeData(options = {}) {
+    const { silent = false } = options;
+    if (silent) {
+      this.setData({ errorMessage: '' });
+    } else {
+      this.setData({ loading: true, errorMessage: '' });
+    }
 
     try {
-      const { moments = [], space = {} } = await fetchHomeData();
+      const { moments = [], notifications = [], unreadNotificationCount = 0, momentNotification = {}, space = {} } = await fetchHomeData();
       const startDate = space.startDate || '';
       const today = formatDate(new Date());
       const sortedMoments = [...moments].sort((left, right) => (right.createdAt || 0) - (left.createdAt || 0));
@@ -70,6 +103,10 @@ Page({
         latestDate: latestMoment ? latestMoment.date : '',
         moments: sortedMoments,
         recentMoments,
+        notifications,
+        unreadNotificationCount,
+        momentNotification,
+        momentNotificationText: getMomentNotificationText(momentNotification),
         memoryFocusIndex: 0,
         petIslandHint,
         loading: false,
@@ -140,6 +177,108 @@ Page({
         icon: 'none',
       });
       await this.loadHomeData();
+    }
+  },
+
+  async enableMomentNotification() {
+    if (this.data.notificationSaving) return;
+    const notificationConfig = getMomentNotificationConfig();
+    if (!notificationConfig.templateId) {
+      wx.showToast({
+        title: '请先配置订阅模板 ID',
+        icon: 'none',
+      });
+      return;
+    }
+
+    this.setData({ notificationSaving: true });
+    try {
+      const subscribeResult = await new Promise((resolve, reject) => {
+        wx.requestSubscribeMessage({
+          tmplIds: [notificationConfig.templateId],
+          success: resolve,
+          fail: reject,
+        });
+      });
+      const status = subscribeResult[notificationConfig.templateId] || 'unknown';
+      if (status !== 'accept') {
+        this.setData({
+          momentNotification: {
+            ...this.data.momentNotification,
+            status,
+          },
+          momentNotificationText: '你这次没有开启微信提醒',
+        });
+        wx.showToast({
+          title: '已取消开启提醒',
+          icon: 'none',
+        });
+        return;
+      }
+
+      const result = await saveMomentNotificationSubscription(status);
+      const momentNotification = result.momentNotification || this.data.momentNotification;
+      this.setData({
+        momentNotification,
+        momentNotificationText: getMomentNotificationText(momentNotification),
+      });
+      wx.showToast({
+        title: status === 'accept' ? '微信提醒已开启' : '暂未开启微信提醒',
+        icon: 'none',
+      });
+    } catch (error) {
+      if (isUnknownCloudActionError(error)) {
+        wx.showToast({
+          title: '请先重新部署 relationship 云函数',
+          icon: 'none',
+        });
+        return;
+      }
+      wx.showToast({
+        title: error.message || '订阅请求失败',
+        icon: 'none',
+      });
+    } finally {
+      this.setData({ notificationSaving: false });
+    }
+  },
+
+  async handleNotificationTap(e) {
+    const { id, momentId, isRead } = e.currentTarget.dataset;
+    if (!momentId) return;
+
+    if (!isRead && id) {
+      const result = await markNotificationsRead([id]);
+      this.setData({
+        notifications: result.notifications || this.data.notifications,
+        unreadNotificationCount: result.unreadNotificationCount || 0,
+      });
+    }
+
+    wx.navigateTo({
+      url: `/pages/moment/detail?id=${momentId}`,
+    });
+  },
+
+  async markAllNotificationsRead() {
+    const unreadIds = this.data.notifications.filter((item) => !item.isRead).map((item) => item.id);
+    if (!unreadIds.length) return;
+
+    try {
+      const result = await markNotificationsRead(unreadIds);
+      this.setData({
+        notifications: result.notifications || [],
+        unreadNotificationCount: result.unreadNotificationCount || 0,
+      });
+      wx.showToast({
+        title: '提醒已标记为已读',
+        icon: 'none',
+      });
+    } catch (error) {
+      wx.showToast({
+        title: error.message || '操作失败，请稍后重试',
+        icon: 'none',
+      });
     }
   },
 

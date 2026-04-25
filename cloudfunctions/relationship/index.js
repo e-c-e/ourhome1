@@ -9,6 +9,7 @@ const USERS_COLLECTION = 'users';
 const MOMENTS_COLLECTION = 'moments';
 const ANNIVERSARIES_COLLECTION = 'anniversaries';
 const WISHES_COLLECTION = 'wishes';
+const NOTIFICATIONS_COLLECTION = 'notifications';
 const SPACE_DOC_ID = 'main';
 
 const PET_PRESETS = [
@@ -60,6 +61,30 @@ function formatMonth(date = new Date()) {
 
 function createId(prefix) {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function isCollectionMissingError(error) {
+  const message = `${(error && error.message) || ''} ${(error && error.errMsg) || ''}`;
+  return message.includes('database collection not exists') || message.includes('DATABASE_COLLECTION_NOT_EXIST');
+}
+
+function formatTimeText(timestamp = Date.now()) {
+  const date = new Date(timestamp);
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
+  const hours = `${date.getHours()}`.padStart(2, '0');
+  const minutes = `${date.getMinutes()}`.padStart(2, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
+}
+
+function getSenderDisplayName(sender = {}) {
+  return sender.nickname || (sender.role === 'owner' ? '我' : '你') || '对方';
+}
+
+function getMomentReminderContent(moment = {}) {
+  const sourceText = `${moment.title || ''}`.trim() || `${moment.content || ''}`.trim() || '给你留了一条新的小记录';
+  return sourceText.slice(0, 20);
 }
 
 function buildDefaultReminderSettings() {
@@ -173,6 +198,41 @@ function buildLocation(data = {}) {
     address: data.address || '',
     latitude: Number(data.latitude) || 0,
     longitude: Number(data.longitude) || 0,
+  };
+}
+
+function normalizeMomentNotificationSubscription(record = {}) {
+  return {
+    enabled: Boolean(record.enabled),
+    templateId: record.templateId || '',
+    status: record.status || 'unknown',
+    updatedAt: Number(record.updatedAt) || 0,
+    lastAcceptedAt: Number(record.lastAcceptedAt) || 0,
+  };
+}
+
+function normalizeNotificationRecord(item = {}) {
+  return {
+    id: item._id,
+    type: item.type || 'moment-created',
+    title: item.title || '你收到一条新提醒',
+    content: item.content || '',
+    momentId: item.momentId || '',
+    senderUserId: item.senderUserId || '',
+    senderUserRole: item.senderUserRole || '',
+    senderNickname: item.senderNickname || '',
+    targetUserId: item.targetUserId || '',
+    isRead: Boolean(item.isRead),
+    createdAt: Number(item.createdAt) || 0,
+    createdAtText: formatTimeText(item.createdAt),
+    readAt: Number(item.readAt) || 0,
+    page: item.page || 'pages/home/index',
+    channel: {
+      inApp: item.channel ? item.channel.inApp !== false : true,
+      subscribeAttempted: Boolean(item.channel && item.channel.subscribeAttempted),
+      subscribeSent: Boolean(item.channel && item.channel.subscribeSent),
+      subscribeError: (item.channel && item.channel.subscribeError) || '',
+    },
   };
 }
 
@@ -325,6 +385,159 @@ async function safeCount(collectionName, where = null) {
   }
 }
 
+async function ensureNotificationCollection() {
+  try {
+    const marker = await db.collection(NOTIFICATIONS_COLLECTION).add({
+      data: {
+        bootstrap: true,
+        createdAt: Date.now(),
+      },
+    });
+    await db.collection(NOTIFICATIONS_COLLECTION).doc(marker._id).remove();
+  } catch (error) {
+    if (!isCollectionMissingError(error)) {
+      throw error;
+    }
+    throw error;
+  }
+}
+
+async function getPartnerUser(user) {
+  try {
+    const result = await db.collection(USERS_COLLECTION).limit(2).get();
+    const users = result.data || [];
+    return users.find((item) => item._id !== user._id) || null;
+  } catch (error) {
+    return null;
+  }
+}
+
+async function getNotificationsForUser(user, limit = 10) {
+  try {
+    const result = await db.collection(NOTIFICATIONS_COLLECTION)
+      .where({ targetUserId: user._id })
+      .orderBy('createdAt', 'desc')
+      .limit(limit)
+      .get();
+    return (result.data || []).map(normalizeNotificationRecord);
+  } catch (error) {
+    return [];
+  }
+}
+
+function buildSubscribeMessageData(notificationConfig = {}, moment = {}, sender = {}) {
+  const fields = notificationConfig.fields || {};
+  const payload = {};
+  const timeField = fields.time;
+  const contentField = fields.content || fields.title;
+  const senderField = fields.sender || fields.note;
+  const senderName = getSenderDisplayName(sender);
+
+  if (contentField) {
+    payload[contentField] = {
+      value: getMomentReminderContent(moment),
+    };
+  }
+  if (timeField) {
+    payload[timeField] = {
+      value: formatTimeText(moment.createdAt || Date.now()),
+    };
+  }
+  if (senderField) {
+    payload[senderField] = {
+      value: `${senderName}刚刚想你`.slice(0, 20),
+    };
+  }
+
+  return payload;
+}
+
+async function trySendMomentSubscribeMessage(targetUser, sender, moment, notificationConfig = {}) {
+  const subscription = normalizeMomentNotificationSubscription(
+    targetUser && targetUser.subscriptions && targetUser.subscriptions.momentCreated,
+  );
+  const templateId = subscription.templateId || notificationConfig.templateId || '';
+
+  if (!targetUser || !targetUser.openid || !subscription.enabled || !templateId) {
+    return {
+      attempted: false,
+      sent: false,
+      error: subscription.enabled ? 'TEMPLATE_NOT_CONFIGURED' : 'TARGET_NOT_SUBSCRIBED',
+    };
+  }
+
+  try {
+    await cloud.openapi.subscribeMessage.send({
+      touser: targetUser.openid,
+      templateId,
+      page: notificationConfig.page || 'pages/home/index',
+      miniprogramState: 'developer',
+      lang: 'zh_CN',
+      data: buildSubscribeMessageData(notificationConfig, moment, sender),
+    });
+    return {
+      attempted: true,
+      sent: true,
+      error: '',
+    };
+  } catch (error) {
+    return {
+      attempted: true,
+      sent: false,
+      error: error.message || error.errMsg || 'SUBSCRIBE_SEND_FAILED',
+    };
+  }
+}
+
+async function createMomentNotification(moment, sender, notificationConfig = {}) {
+  const targetUser = await getPartnerUser(sender);
+  if (!targetUser) {
+    return { created: false, reason: 'PARTNER_NOT_FOUND' };
+  }
+
+  const subscribeResult = await trySendMomentSubscribeMessage(targetUser, sender, moment, notificationConfig);
+  const senderName = getSenderDisplayName(sender);
+  const notification = {
+    type: 'moment-created',
+    title: `${senderName}给你留了一条新记录`,
+    content: `刚刚把《${moment.title || '今天的记录'}》放进了你们的回忆里，点开看看。`,
+    page: 'pages/home/index',
+    momentId: moment._id,
+    senderUserId: sender._id,
+    senderUserRole: sender.role,
+    senderNickname: senderName,
+    targetUserId: targetUser._id,
+    targetUserRole: targetUser.role,
+    targetOpenid: targetUser.openid,
+    isRead: false,
+    createdAt: Date.now(),
+    readAt: 0,
+    channel: {
+      inApp: true,
+      subscribeAttempted: subscribeResult.attempted,
+      subscribeSent: subscribeResult.sent,
+      subscribeError: subscribeResult.error || '',
+    },
+  };
+
+  try {
+    await ensureNotificationCollection();
+    const result = await db.collection(NOTIFICATIONS_COLLECTION).add({ data: notification });
+    return {
+      created: true,
+      notificationId: result._id,
+      subscribeResult,
+    };
+  } catch (error) {
+    return {
+      created: false,
+      reason: isCollectionMissingError(error) ? 'NOTIFICATION_COLLECTION_MISSING' : 'NOTIFICATION_CREATE_FAILED',
+      subscribeResult,
+      error: error.message || error.errMsg || '',
+    };
+  }
+}
+
 async function getSpace() {
   try {
     const { data } = await db.collection(SPACE_COLLECTION).doc(SPACE_DOC_ID).get();
@@ -375,8 +588,13 @@ async function getHomeData() {
   const space = await getSpace();
   const user = await ensureAuthorizedUser();
   const moments = await safeList(MOMENTS_COLLECTION, { orderField: 'createdAt', orderDirection: 'desc', limit: 100 });
+  const notifications = await getNotificationsForUser(user, 10);
+  const unreadNotificationCount = notifications.filter((item) => !item.isRead).length;
   return {
     space,
+    notifications,
+    unreadNotificationCount,
+    momentNotification: normalizeMomentNotificationSubscription(user.subscriptions && user.subscriptions.momentCreated),
     moments: await Promise.all(moments.map((item) => prepareMomentForClient(item, user))),
   };
 }
@@ -399,10 +617,79 @@ async function createMoment(data, user) {
   };
 
   const createResult = await db.collection(MOMENTS_COLLECTION).add({ data: moment });
-  return prepareMomentForClient({
+  const createdMoment = {
     ...moment,
     _id: createResult._id,
-  }, user);
+  };
+  const notification = await createMomentNotification(createdMoment, user, data.notificationConfig || {});
+  return {
+    moment: await prepareMomentForClient(createdMoment, user),
+    notification,
+  };
+}
+
+async function saveMomentNotificationSubscription(data, user) {
+  const current = normalizeMomentNotificationSubscription(user.subscriptions && user.subscriptions.momentCreated);
+  const status = data.status || 'unknown';
+  const nextSubscription = {
+    ...current,
+    templateId: data.templateId || current.templateId || '',
+    status,
+    enabled: status === 'accept',
+    updatedAt: Date.now(),
+    lastAcceptedAt: status === 'accept' ? Date.now() : current.lastAcceptedAt,
+  };
+
+  await db.collection(USERS_COLLECTION).doc(user._id).update({
+    data: {
+      subscriptions: {
+        ...(user.subscriptions || {}),
+        momentCreated: nextSubscription,
+      },
+      updatedAt: Date.now(),
+    },
+  });
+
+  return {
+    momentNotification: nextSubscription,
+  };
+}
+
+async function markNotificationsRead(ids, user) {
+  const targetIds = Array.isArray(ids) ? ids.filter(Boolean) : [];
+
+  if (targetIds.length) {
+    await Promise.all(targetIds.map(async (id) => {
+      try {
+        const doc = await db.collection(NOTIFICATIONS_COLLECTION).doc(id).get();
+        if (!doc.data || doc.data.targetUserId !== user._id) return;
+        await db.collection(NOTIFICATIONS_COLLECTION).doc(id).update({
+          data: {
+            isRead: true,
+            readAt: Date.now(),
+          },
+        });
+      } catch (error) {
+        return null;
+      }
+      return null;
+    }));
+  } else {
+    const unread = await getNotificationsForUser(user, 50);
+    const unreadIds = unread.filter((item) => !item.isRead).map((item) => item.id);
+    await Promise.all(unreadIds.map((id) => db.collection(NOTIFICATIONS_COLLECTION).doc(id).update({
+      data: {
+        isRead: true,
+        readAt: Date.now(),
+      },
+    })));
+  }
+
+  const notifications = await getNotificationsForUser(user, 10);
+  return {
+    notifications,
+    unreadNotificationCount: notifications.filter((item) => !item.isRead).length,
+  };
 }
 
 async function getMomentDetail(id, user) {
@@ -682,6 +969,10 @@ exports.main = async (event) => {
       return saveSpacePatch({ startDate: data.startDate || '' });
     case 'createMoment':
       return createMoment(data, user);
+    case 'saveMomentNotificationSubscription':
+      return saveMomentNotificationSubscription(data, user);
+    case 'markNotificationsRead':
+      return markNotificationsRead(data.ids, user);
     case 'toggleMomentLike':
       return toggleMomentLike(data.id, user);
     case 'addMomentComment':

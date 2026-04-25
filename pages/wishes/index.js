@@ -83,9 +83,80 @@ function toggleExpandedItems(list, id, shouldExpand) {
   }));
 }
 
+function normalizeWish(item) {
+  return {
+    ...item,
+    id: item._id || item.id,
+    isCompleted: Boolean(item.isCompleted),
+    isStored: Boolean(item.isStored),
+    completedTime: item.completedTime || '',
+    storedTime: item.storedTime || '',
+    createTime: Number(item.createTime) || 0,
+    isExpanded: false,
+  };
+}
+
+function buildExpandedState(treeNodes = [], storedWishes = []) {
+  return treeNodes.concat(storedWishes).reduce((result, item) => {
+    if (item && item.id) {
+      result[item.id] = Boolean(item.isExpanded);
+    }
+    return result;
+  }, {});
+}
+
+function withExpandedState(items, expandedState) {
+  return items.map((item) => ({
+    ...item,
+    isExpanded: Boolean(expandedState[item.id]),
+  }));
+}
+
+function buildWishPageState(wishes, expandedState = {}) {
+  const normalizedWishes = wishes.map(normalizeWish);
+  const pendingWishes = normalizedWishes
+    .filter((item) => !item.isCompleted)
+    .sort((left, right) => right.createTime - left.createTime);
+
+  const ripeWishes = normalizedWishes
+    .filter((item) => item.isCompleted && !item.isStored)
+    .sort((left, right) => `${right.completedTime || ''}`.localeCompare(`${left.completedTime || ''}`));
+
+  const storedWishes = normalizedWishes
+    .filter((item) => item.isCompleted && item.isStored)
+    .sort((left, right) => `${right.storedTime || ''}`.localeCompare(`${left.storedTime || ''}`));
+
+  const completedCount = ripeWishes.length + storedWishes.length;
+  const treeStage = getTreeStage(completedCount);
+
+  return {
+    rawWishes: normalizedWishes,
+    treeNodes: withExpandedState(
+      decorateTreeNodes(ripeWishes, 'ripe').concat(decorateTreeNodes(pendingWishes, 'bud', ripeWishes.length)),
+      expandedState,
+    ),
+    storedWishes: withExpandedState(decorateCabinetItems(storedWishes), expandedState),
+    summary: {
+      total: normalizedWishes.length,
+      completed: completedCount,
+      pending: pendingWishes.length,
+      ripe: ripeWishes.length,
+      stored: storedWishes.length,
+    },
+    treeStage,
+    heroTip: completedCount
+      ? `已经有 ${completedCount} 个心愿长出了果实，成熟的果子会先挂在最显眼的枝头。`
+      : '先从一个很小的愿望开始，把未来一点点挂满整棵树。',
+    cabinetHint: storedWishes.length
+      ? `收获匣里已经收藏了 ${storedWishes.length} 颗果实，它们会在这里慢慢变成纪念。`
+      : '成熟的果实摘下后，会被安静放进下面的收获匣。',
+  };
+}
+
 Page({
   data: {
     wishText: '',
+    rawWishes: [],
     treeNodes: [],
     storedWishes: [],
     summary: {
@@ -113,49 +184,8 @@ Page({
 
     try {
       const { wishes = [] } = await fetchMemorialData();
-      const normalizedWishes = wishes.map((item) => ({
-        ...item,
-        id: item._id,
-        isCompleted: Boolean(item.isCompleted),
-        isStored: Boolean(item.isStored),
-        completedTime: item.completedTime || '',
-        storedTime: item.storedTime || '',
-        createTime: Number(item.createTime) || 0,
-        isExpanded: false,
-      }));
-
-      const pendingWishes = normalizedWishes
-        .filter((item) => !item.isCompleted)
-        .sort((left, right) => right.createTime - left.createTime);
-
-      const ripeWishes = normalizedWishes
-        .filter((item) => item.isCompleted && !item.isStored)
-        .sort((left, right) => `${right.completedTime || ''}`.localeCompare(`${left.completedTime || ''}`));
-
-      const storedWishes = normalizedWishes
-        .filter((item) => item.isCompleted && item.isStored)
-        .sort((left, right) => `${right.storedTime || ''}`.localeCompare(`${left.storedTime || ''}`));
-
-      const completedCount = ripeWishes.length + storedWishes.length;
-      const treeStage = getTreeStage(completedCount);
-
       this.setData({
-        treeNodes: decorateTreeNodes(ripeWishes, 'ripe').concat(decorateTreeNodes(pendingWishes, 'bud', ripeWishes.length)),
-        storedWishes: decorateCabinetItems(storedWishes),
-        summary: {
-          total: normalizedWishes.length,
-          completed: completedCount,
-          pending: pendingWishes.length,
-          ripe: ripeWishes.length,
-          stored: storedWishes.length,
-        },
-        treeStage,
-        heroTip: completedCount
-          ? `已经有 ${completedCount} 个心愿长出了果实，成熟的果子会先挂在最显眼的枝头。`
-          : '先从一个很小的愿望开始，把未来一点点挂满整棵树。',
-        cabinetHint: storedWishes.length
-          ? `收获匣里已经收藏了 ${storedWishes.length} 颗果实，它们会在这里慢慢变成纪念。`
-          : '成熟的果实摘下后，会被安静放进下面的收获匣。',
+        ...buildWishPageState(wishes),
         loading: false,
       });
     } catch (error) {
@@ -168,6 +198,15 @@ Page({
 
   handleWishInput(e) {
     this.setData({ wishText: e.detail.value });
+  },
+
+  applyWishState(nextRawWishes, changedId = '') {
+    const expandedState = buildExpandedState(this.data.treeNodes, this.data.storedWishes);
+    if (changedId) {
+      expandedState[changedId] = false;
+    }
+
+    this.setData(buildWishPageState(nextRawWishes, expandedState));
   },
 
   toggleWishDetail(e) {
@@ -189,9 +228,21 @@ Page({
     }
 
     try {
-      await addWish(content);
+      const result = await addWish(content);
+      const nextRawWishes = [
+        {
+          id: result._id,
+          content,
+          isCompleted: false,
+          isStored: false,
+          completedTime: '',
+          storedTime: '',
+          createTime: Date.now(),
+        },
+        ...this.data.rawWishes,
+      ];
       this.setData({ wishText: '' });
-      await this.loadPageData();
+      this.applyWishState(nextRawWishes, result._id);
       wx.showToast({ title: '心愿已经挂上树枝', icon: 'none' });
     } catch (error) {
       wx.showToast({ title: error.message || '新增失败', icon: 'none' });
@@ -201,8 +252,20 @@ Page({
   async toggleWish(e) {
     const { id } = e.currentTarget.dataset;
     try {
-      await toggleWish(id, formatDate(new Date()));
-      await this.loadPageData();
+      const completedTime = formatDate(new Date());
+      await toggleWish(id, completedTime);
+      const nextRawWishes = this.data.rawWishes.map((item) => {
+        if (item.id !== id) return item;
+        const isCompleted = !item.isCompleted;
+        return {
+          ...item,
+          isCompleted,
+          isStored: false,
+          completedTime: isCompleted ? completedTime : '',
+          storedTime: '',
+        };
+      });
+      this.applyWishState(nextRawWishes, id);
     } catch (error) {
       wx.showToast({ title: error.message || '更新失败', icon: 'none' });
     }
@@ -212,7 +275,16 @@ Page({
     const { id } = e.currentTarget.dataset;
     try {
       await setWishStored(id, true);
-      await this.loadPageData();
+      const nextRawWishes = this.data.rawWishes.map((item) => (
+        item.id === id
+          ? {
+            ...item,
+            isStored: true,
+            storedTime: Date.now(),
+          }
+          : item
+      ));
+      this.applyWishState(nextRawWishes, id);
       wx.showToast({ title: '果实已放进收获匣', icon: 'none' });
     } catch (error) {
       wx.showToast({ title: error.message || '收藏失败', icon: 'none' });
@@ -223,7 +295,16 @@ Page({
     const { id } = e.currentTarget.dataset;
     try {
       await setWishStored(id, false);
-      await this.loadPageData();
+      const nextRawWishes = this.data.rawWishes.map((item) => (
+        item.id === id
+          ? {
+            ...item,
+            isStored: false,
+            storedTime: '',
+          }
+          : item
+      ));
+      this.applyWishState(nextRawWishes, id);
       wx.showToast({ title: '果实重新挂回树上', icon: 'none' });
     } catch (error) {
       wx.showToast({ title: error.message || '恢复失败', icon: 'none' });
@@ -234,7 +315,7 @@ Page({
     const { id } = e.currentTarget.dataset;
     try {
       await removeWish(id);
-      await this.loadPageData();
+      this.applyWishState(this.data.rawWishes.filter((item) => item.id !== id), id);
       wx.showToast({ title: '已经从树上取下', icon: 'none' });
     } catch (error) {
       wx.showToast({ title: error.message || '移除失败', icon: 'none' });

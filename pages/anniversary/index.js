@@ -96,10 +96,62 @@ function buildReminderTips(startDate, anniversaries, settings, today) {
   return tips;
 }
 
+function normalizeAnniversary(item, today) {
+  const diff = getDateDistance(item.date, today);
+  const annualProgress = buildAnnualProgress(item.date, today);
+  return {
+    ...item,
+    id: item._id || item.id,
+    diffLabel: diff >= 0 ? `还有 ${diff + 1} 天` : `已经过去 ${Math.abs(diff) - 1} 天`,
+    anniversaryDaysText: `已经一起记住 ${getDaysBetween(item.date, today)} 天`,
+    daysLeft: annualProgress.daysLeft,
+    progressPercent: annualProgress.progressPercent,
+    progressPercentText: `${annualProgress.progressPercent.toFixed(1)}%`,
+    progressLabel: annualProgress.progressLabel,
+  };
+}
+
+function sortAnniversaries(list) {
+  return [...list].sort((left, right) => {
+    if (left.daysLeft !== right.daysLeft) {
+      return left.daysLeft - right.daysLeft;
+    }
+    return left.date.localeCompare(right.date);
+  });
+}
+
+function buildAnniversaryState({ today, startDate, anniversaries, reminderSettings }, currentData = {}) {
+  const relationshipDays = startDate ? getDaysBetween(startDate, today) : 0;
+  const milestone = buildMilestoneProgress(relationshipDays);
+  const anniversaryList = sortAnniversaries(anniversaries.map((item) => normalizeAnniversary(item, today)));
+
+  return {
+    rawAnniversaries: anniversaries.map((item) => ({
+      ...item,
+      id: item._id || item.id,
+    })),
+    today,
+    startDate,
+    startDateLabel: startDate ? `从 ${startDate} 开始` : '还没有设置相识日期',
+    startDatePickerValue: startDate || today,
+    startDateActionLabel: startDate ? '修改在一起日期' : '设置在一起日期',
+    relationshipDays,
+    anniversaryDate: currentData.anniversaryDate || today,
+    anniversaries: anniversaryList,
+    prevMilestone: milestone.prevMilestone,
+    nextMilestone: milestone.nextMilestone,
+    walkedDays: milestone.walkedDays,
+    milestoneLabel: milestone.milestoneLabel,
+    reminderSettings,
+    reminderTips: buildReminderTips(startDate, anniversaryList, reminderSettings, today),
+  };
+}
+
 Page({
   data: {
     today: formatDate(new Date()),
     startDate: '',
+    rawAnniversaries: [],
     startDateLabel: '还没有设置相识日期',
     startDatePickerValue: formatDate(new Date()),
     startDateActionLabel: '设置在一起日期',
@@ -133,49 +185,18 @@ Page({
       const today = formatDate(new Date());
       const { space = {}, anniversaries = [] } = await fetchMemorialData();
       const startDate = space.startDate || '';
-      const relationshipDays = startDate ? getDaysBetween(startDate, today) : 0;
-      const milestone = buildMilestoneProgress(relationshipDays);
       const reminderSettings = {
         ...DEFAULT_REMINDER_SETTINGS,
         ...(space.reminderSettings || {}),
       };
-      const anniversaryList = anniversaries
-        .map((item) => {
-          const diff = getDateDistance(item.date, today);
-          const annualProgress = buildAnnualProgress(item.date, today);
-          return {
-            ...item,
-            id: item._id,
-            diffLabel: diff >= 0 ? `还有 ${diff + 1} 天` : `已经过去 ${Math.abs(diff) - 1} 天`,
-            anniversaryDaysText: `已经一起记住 ${getDaysBetween(item.date, today)} 天`,
-            daysLeft: annualProgress.daysLeft,
-            progressPercent: annualProgress.progressPercent,
-            progressPercentText: `${annualProgress.progressPercent.toFixed(1)}%`,
-            progressLabel: annualProgress.progressLabel,
-          };
-        })
-        .sort((left, right) => {
-          if (left.daysLeft !== right.daysLeft) {
-            return left.daysLeft - right.daysLeft;
-          }
-          return left.date.localeCompare(right.date);
-        });
 
       this.setData({
-        today,
-        startDate,
-        startDateLabel: startDate ? `从 ${startDate} 开始` : '还没有设置相识日期',
-        startDatePickerValue: startDate || today,
-        startDateActionLabel: startDate ? '修改在一起日期' : '设置在一起日期',
-        relationshipDays,
-        anniversaryDate: today,
-        anniversaries: anniversaryList,
-        prevMilestone: milestone.prevMilestone,
-        nextMilestone: milestone.nextMilestone,
-        walkedDays: milestone.walkedDays,
-        milestoneLabel: milestone.milestoneLabel,
-        reminderSettings,
-        reminderTips: buildReminderTips(startDate, anniversaryList, reminderSettings, today),
+        ...buildAnniversaryState({
+          today,
+          startDate,
+          anniversaries,
+          reminderSettings,
+        }, this.data),
         loading: false,
       });
     } catch (error) {
@@ -195,11 +216,12 @@ Page({
       const today = formatDate(new Date());
 
       this.setData({
-        startDate: savedStartDate,
-        startDateLabel: `从 ${savedStartDate} 开始`,
-        startDatePickerValue: savedStartDate,
-        startDateActionLabel: '修改在一起日期',
-        relationshipDays: getDaysBetween(savedStartDate, today),
+        ...buildAnniversaryState({
+          today,
+          startDate: savedStartDate,
+          anniversaries: this.data.rawAnniversaries,
+          reminderSettings: this.data.reminderSettings,
+        }, this.data),
       });
 
       wx.showToast({
@@ -249,12 +271,25 @@ Page({
       return;
     }
 
-    await addAnniversary(name, this.data.anniversaryDate);
+    const result = await addAnniversary(name, this.data.anniversaryDate);
+    const nextRawAnniversaries = [
+      {
+        id: result._id,
+        name,
+        date: this.data.anniversaryDate,
+      },
+      ...this.data.rawAnniversaries,
+    ];
     this.setData({
       anniversaryName: '',
       anniversaryEditorVisible: false,
+      ...buildAnniversaryState({
+        today: this.data.today,
+        startDate: this.data.startDate,
+        anniversaries: nextRawAnniversaries,
+        reminderSettings: this.data.reminderSettings,
+      }, this.data),
     });
-    await this.loadPageData();
     wx.showToast({
       title: '纪念日已添加',
       icon: 'success',
@@ -264,24 +299,41 @@ Page({
   async removeAnniversary(e) {
     const { id } = e.currentTarget.dataset;
     await removeAnniversary(id);
-    await this.loadPageData();
+    this.setData(buildAnniversaryState({
+      today: this.data.today,
+      startDate: this.data.startDate,
+      anniversaries: this.data.rawAnniversaries.filter((item) => item.id !== id),
+      reminderSettings: this.data.reminderSettings,
+    }, this.data));
   },
 
   async toggleReminderEnabled() {
-    await saveReminderSettings({
+    const nextReminderSettings = {
       ...this.data.reminderSettings,
       enabled: !this.data.reminderSettings.enabled,
-    });
-    await this.loadPageData();
+    };
+    await saveReminderSettings(nextReminderSettings);
+    this.setData(buildAnniversaryState({
+      today: this.data.today,
+      startDate: this.data.startDate,
+      anniversaries: this.data.rawAnniversaries,
+      reminderSettings: nextReminderSettings,
+    }, this.data));
   },
 
   async cycleReminderWindow() {
     const current = Number(this.data.reminderSettings.daysBefore) || 3;
     const next = current === 1 ? 3 : current === 3 ? 7 : 1;
-    await saveReminderSettings({
+    const nextReminderSettings = {
       ...this.data.reminderSettings,
       daysBefore: next,
-    });
-    await this.loadPageData();
+    };
+    await saveReminderSettings(nextReminderSettings);
+    this.setData(buildAnniversaryState({
+      today: this.data.today,
+      startDate: this.data.startDate,
+      anniversaries: this.data.rawAnniversaries,
+      reminderSettings: nextReminderSettings,
+    }, this.data));
   },
 });

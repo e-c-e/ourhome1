@@ -1,5 +1,5 @@
 import { createMoment } from '../../api/relationship';
-import { STORAGE_KEYS, formatDate } from '../../utils/couple';
+import { STORAGE_KEYS, formatDate, markDirtyFlags } from '../../utils/couple';
 import { ensureAuthorizedPage } from '../../utils/pageAuth';
 
 const MOODS = ['开心', '想你', '纪念', '旅行', '日常', '惊喜', '难过', '委屈', '焦虑', '疲惫', '生气', '失落', '自定义'];
@@ -179,9 +179,13 @@ Page({
     this.setData({ saving: true });
 
     try {
-      await createMoment(this.buildMomentPayload());
+      const result = await createMoment(this.buildMomentPayload());
       wx.removeStorageSync(STORAGE_KEYS.DRAFT);
-      wx.setStorageSync(STORAGE_KEYS.NOTICE, '回忆已保存');
+      const noticeText = result && result.notification && result.notification.created
+        ? '回忆已保存，已给对方留了一条提醒'
+        : '回忆已保存';
+      wx.setStorageSync(STORAGE_KEYS.NOTICE, noticeText);
+      markDirtyFlags(STORAGE_KEYS.HOME_DIRTY, STORAGE_KEYS.WALL_DIRTY, STORAGE_KEYS.DIARY_DIRTY);
       wx.switchTab({
         url: '/pages/home/index',
       });
