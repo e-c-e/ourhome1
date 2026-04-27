@@ -1,0 +1,29 @@
+<warm-navbar title="今日小提示" left-arrow bind:left-click="goBack"></warm-navbar>
+
+<view class="tips-page warm-fade-page">
+  <warm-empty-state wx:if="{{loading}}" customClass="tips-empty tips-empty--soft" title="🥤 正在整理提示" desc="把今天的提醒和提示库慢慢摆好。"></warm-empty-state>
+
+  <warm-empty-state wx:elif="{{errorMessage}}" customClass="tips-empty tips-empty--soft" title="💭 加载失败" desc="{{errorMessage}}"></warm-empty-state>
+
+  <block wx:else>
+    <view class="tips-editor">
+      <view class="tips-editor__title">编辑你的提示库</view>
+      <view class="tips-editor__desc">一行写一条提示，首页只显示今天轮换到的那一条，更多提示会在这里分组查看。</view>
+      <textarea class="tips-editor__textarea" maxlength="240" placeholder="例如：\n多喝水\n忙完记得抱一抱对方\n今天也要早点休息" value="{{dailyTipDraft}}" bindinput="handleDraftInput"></textarea>
+      <view class="tips-editor__action" bindtap="saveTips">{{saving ? '保存中...' : '保存提示库'}}</view>
+    </view>
+
+    <view class="tips-sections">
+      <view wx:for="{{sections}}" wx:key="key" class="tips-section">
+        <view class="tips-section__title">{{item.title}}</view>
+        <view class="tips-section__desc">{{item.desc}}</view>
+        <view class="tips-list">
+          <view wx:for="{{item.items}}" wx:for-item="tip" wx:key="index" class="tips-item {{item.key === 'today' ? 'tips-item--today' : ''}}">
+            <text class="tips-item__index">{{index + 1}}</text>
+            <text class="tips-item__text">{{tip}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </block>
+</view>

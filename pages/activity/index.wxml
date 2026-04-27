@@ -1,0 +1,40 @@
+<warm-navbar title="最近动态" left-arrow bind:left-click="goBack"></warm-navbar>
+
+<view class="activity-page warm-fade-page">
+  <warm-empty-state wx:if="{{loading}}" customClass="activity-empty activity-empty--soft" title="💌 正在整理动态" desc="把你们最近的小动作慢慢排好。"></warm-empty-state>
+
+  <warm-empty-state wx:elif="{{errorMessage}}" customClass="activity-empty activity-empty--soft" title="💭 加载失败" desc="{{errorMessage}}"></warm-empty-state>
+
+  <block wx:else>
+    <view class="activity-filter">
+      <view wx:for="{{filterOptions}}" wx:key="value" class="activity-filter__item {{activeFilter === item.value ? 'activity-filter__item--active' : ''}}" data-filter="{{item.value}}" bindtap="handleFilterChange">{{item.label}}</view>
+    </view>
+
+    <view wx:if="{{activitySections.length}}" class="activity-sections">
+      <view wx:for="{{activitySections}}" wx:key="key" class="activity-section">
+        <view class="activity-section__title">{{item.title}}</view>
+        <view class="activity-timeline">
+          <view wx:for="{{item.items}}" wx:key="id" class="activity-card" data-moment-id="{{item.momentId}}" bindtap="openActivityTarget">
+            <view class="activity-card__line"></view>
+            <view class="activity-card__dot"></view>
+            <view class="activity-card__body">
+              <view class="activity-card__meta">
+                <text class="activity-card__badge">{{item.badge}}</text>
+                <text class="activity-card__time">{{item.createdAtText}}</text>
+              </view>
+              <view class="activity-card__title">{{item.title}}</view>
+              <view class="activity-card__desc">{{item.desc}}</view>
+              <view class="activity-card__footer">
+                <text class="activity-card__actor">{{item.userNickname}}</text>
+                <text class="activity-card__route">{{item.routeLabel}}</text>
+                <text wx:if="{{item.momentId}}" class="activity-card__link">查看详情</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <warm-empty-state wx:else customClass="activity-empty" title="🌷 还没有动态" desc="等你们写记录、评论或点赞后，这里会慢慢热闹起来。"></warm-empty-state>
+  </block>
+</view>

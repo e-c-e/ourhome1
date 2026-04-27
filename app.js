@@ -1,4 +1,4 @@
-import { loginToSpace } from './api/relationship';
+import { loginToSpace, trackMiniProgramVisit } from './api/relationship';
 import { initCloud } from './utils/cloud';
 
 App({
@@ -23,6 +23,11 @@ App({
       });
     });
   },
+
+  onShow(options = {}) {
+    this.trackAppVisit(options).catch(() => {});
+  },
+
   globalData: {
     userInfo: null,
     isAuthorized: false,
@@ -67,5 +72,15 @@ App({
   refreshAuth() {
     this.bootstrapPromise = null;
     return this.bootstrap(true);
+  },
+
+  async trackAppVisit(options = {}) {
+    try {
+      const authResult = await this.bootstrap();
+      if (!authResult || !authResult.authorized) return;
+      await trackMiniProgramVisit(options.path || 'pages/home/index');
+    } catch (error) {
+      // ignore tracking failures to avoid blocking app startup
+    }
   },
 });

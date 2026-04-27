@@ -78,6 +78,69 @@ function formatTimeText(timestamp = Date.now()) {
   return `${year}-${month}-${day} ${hours}:${minutes}`;
 }
 
+function formatClockText(timestamp = 0) {
+  if (!timestamp) return '';
+  const date = new Date(timestamp);
+  const hours = `${date.getHours()}`.padStart(2, '0');
+  const minutes = `${date.getMinutes()}`.padStart(2, '0');
+  return `${hours}:${minutes}`;
+}
+
+function toDateValue(dateText) {
+  return new Date(`${dateText}T00:00:00`).getTime();
+}
+
+function getDaysLeftFromToday(targetDate, today = formatDate()) {
+  if (!targetDate) return 0;
+  return Math.max(0, Math.round((toDateValue(targetDate) - toDateValue(today)) / (1000 * 60 * 60 * 24)));
+}
+
+function getNextAnnualDate(targetDate, today = formatDate()) {
+  if (!targetDate) return '';
+  const todayDate = new Date(`${today}T00:00:00`);
+  const sourceDate = new Date(`${targetDate}T00:00:00`);
+  let nextDate = new Date(todayDate.getFullYear(), sourceDate.getMonth(), sourceDate.getDate());
+  if (nextDate.getTime() < todayDate.getTime()) {
+    nextDate = new Date(todayDate.getFullYear() + 1, sourceDate.getMonth(), sourceDate.getDate());
+  }
+  return formatDate(nextDate);
+}
+
+function getDefaultDailyTips() {
+  return [
+    '今天记得多喝水，也记得多说一句想你。',
+    '如果今天有一点点开心，别忘了给对方留个记录。',
+    '今晚适合问一句：今天过得怎么样？',
+    '先把普通的一天写下来，它以后会变成很特别的回忆。',
+    '如果今天有点累，就给彼此留一句轻一点的晚安。',
+    '今天的小提示：忙完也记得照顾好自己。',
+    '哪怕只是一张照片，今天也值得被认真记住。',
+  ];
+}
+
+function normalizeDailyTipsText(text = '') {
+  return `${text}`
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .slice(0, 12)
+    .join('\n');
+}
+
+function getDailyTipList(space = {}) {
+  const customTips = normalizeDailyTipsText(space.dailyTipsText || '')
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+  return customTips.length ? customTips : getDefaultDailyTips();
+}
+
+function getDailyTip(space = {}, today = formatDate()) {
+  const tips = getDailyTipList(space);
+  const numeric = Number(today.replace(/-/g, '')) || Date.now();
+  return tips[numeric % tips.length];
+}
+
 function getSenderDisplayName(sender = {}) {
   return sender.nickname || (sender.role === 'owner' ? '我' : '你') || '对方';
 }
@@ -165,6 +228,8 @@ function buildDefaultSpace() {
     partnerA: '我',
     partnerB: '你',
     intro: '把普通日子慢慢写成回忆。',
+    dailyTipsText: '',
+    activityFeed: [],
     startDate: '',
     reminderSettings: buildDefaultReminderSettings(),
     pets: [buildDefaultPet(0), buildDefaultPet(1)],
@@ -182,10 +247,13 @@ function buildSpaceState(space = {}) {
   const base = buildDefaultSpace();
   const source = sanitizeSpaceData(space);
   const pets = Array.isArray(source.pets) ? source.pets : [];
+  const activityFeed = Array.isArray(source.activityFeed) ? source.activityFeed : [];
 
   return {
     ...base,
     ...source,
+    dailyTipsText: normalizeDailyTipsText(source.dailyTipsText || ''),
+    activityFeed,
     reminderSettings: normalizeReminderSettings(source.reminderSettings || {}),
     pets: PET_PRESETS.map((item, index) => normalizePet(pets[index] || { id: item.id }, index)),
   };
@@ -256,6 +324,7 @@ function normalizeMomentRecord(item = {}, user) {
     ...item,
     images,
     likeUserIds,
+    likeActivities: Array.isArray(item.likeActivities) ? item.likeActivities : [],
     comments: Array.isArray(item.comments) ? item.comments : [],
     location: buildLocation(item.location),
   };
@@ -410,6 +479,261 @@ async function getPartnerUser(user) {
   } catch (error) {
     return null;
   }
+}
+
+function getRouteLabel(route = '') {
+  const routeMap = {
+    'pages/home/index': '首页',
+    'pages/wall/index': '时光墙',
+    'pages/anniversary/index': '纪念日',
+    'pages/pet/index': '宠物岛',
+    'pages/wishes/index': '心愿单',
+    'pages/my/index': '我的',
+    'pages/release/index': '记录今天',
+    'pages/diary/index': '日历日记',
+    'pages/moment/detail': '回忆详情',
+    'pages/activity/index': '最近动态',
+  };
+  return routeMap[route] || '你们的空间';
+}
+
+function getRelativeDayLabel(timestamp, today = formatDate()) {
+  if (!timestamp) return '';
+  const targetDate = formatDate(new Date(timestamp));
+  if (targetDate === today) return '今天';
+
+  const yesterday = new Date(`${today}T00:00:00`);
+  yesterday.setDate(yesterday.getDate() - 1);
+  if (targetDate === formatDate(yesterday)) return '昨天';
+
+  return targetDate;
+}
+
+function normalizeActivityItem(item = {}) {
+  const createdAt = Number(item.createdAt) || Date.now();
+  return {
+    id: item.id || createId('activity'),
+    type: item.type || 'unknown',
+    badge: item.badge || '动态',
+    title: item.title || '有一条新的动态',
+    desc: item.desc || '',
+    userId: item.userId || '',
+    userRole: item.userRole || 'partner',
+    userNickname: item.userNickname || (item.userRole === 'owner' ? '我' : '你'),
+    momentId: item.momentId || '',
+    route: item.route || '',
+    routeLabel: item.routeLabel || getRouteLabel(item.route),
+    createdAt,
+    createdAtText: formatTimeText(createdAt),
+    timeText: formatClockText(createdAt),
+  };
+}
+
+async function appendActivityItem(activity = {}) {
+  const space = await getSpace();
+  const activityFeed = [normalizeActivityItem(activity)]
+    .concat(Array.isArray(space.activityFeed) ? space.activityFeed.map(normalizeActivityItem) : [])
+    .slice(0, 80);
+  await saveSpacePatch({ activityFeed });
+  return activityFeed;
+}
+
+async function trackMiniProgramVisit(path = 'pages/home/index', user) {
+  const now = Date.now();
+  const today = formatDate(new Date(now));
+  await db.collection(USERS_COLLECTION).doc(user._id).update({
+    data: {
+      lastMiniProgramVisitAt: now,
+      lastMiniProgramVisitDate: today,
+      lastMiniProgramPath: path,
+      updatedAt: now,
+    },
+  });
+  await appendActivityItem({
+    type: 'visit',
+    badge: '进入小程序',
+    title: `${getSenderDisplayName(user)}进入了小程序`,
+    desc: `在 ${formatTimeText(now)} 进入了小程序，落在${getRouteLabel(path)}。`,
+    userId: user._id,
+    userRole: user.role,
+    userNickname: getSenderDisplayName(user),
+    route: path,
+    routeLabel: getRouteLabel(path),
+    createdAt: now,
+  });
+  return {
+    success: true,
+    visitedAt: now,
+    path,
+  };
+}
+
+function buildPartnerVisitSummary(partnerUser, today = formatDate()) {
+  if (!partnerUser) {
+    return {
+      title: '今天还没有等到对方进入小程序',
+      desc: '等对方进入小程序后，这里会显示进入时间。',
+      hasVisitedToday: false,
+      items: [],
+    };
+  }
+
+  const nickname = partnerUser.nickname || (partnerUser.role === 'owner' ? '我' : '你') || '对方';
+  const visitAt = Number(partnerUser.lastMiniProgramVisitAt) || 0;
+  const relativeDay = getRelativeDayLabel(visitAt, today);
+  const hasVisitedToday = relativeDay === '今天';
+  if (!visitAt) {
+    return {
+      title: `${nickname}今天还没有进入小程序`,
+      desc: '等对方进入后，这里会记录今天进入的时间。',
+      hasVisitedToday: false,
+      items: [],
+    };
+  }
+
+  const visitItem = {
+    id: `visit-${visitAt}`,
+    timeText: formatClockText(visitAt),
+    routeLabel: getRouteLabel(partnerUser.lastMiniProgramPath),
+    dayLabel: relativeDay,
+  };
+
+  if (relativeDay === '昨天') {
+    return {
+      title: `${nickname}昨天进入过小程序`,
+      desc: `昨天 ${formatClockText(visitAt)} 进入，在${getRouteLabel(partnerUser.lastMiniProgramPath)}停留。`,
+      hasVisitedToday: false,
+      timeText: formatClockText(visitAt),
+      items: [visitItem],
+    };
+  }
+
+  if (!hasVisitedToday) {
+    return {
+      title: `${nickname}今天还没有进入小程序`,
+      desc: `上一次是在 ${relativeDay} ${formatClockText(visitAt)} 进入。`,
+      hasVisitedToday: false,
+      timeText: formatClockText(visitAt),
+      items: [visitItem],
+    };
+  }
+
+  return {
+    title: `${nickname}今天进入过小程序`,
+    desc: `今天 ${formatClockText(visitAt)} 进入，在${getRouteLabel(partnerUser.lastMiniProgramPath)}停留。`,
+    hasVisitedToday: true,
+    timeText: formatClockText(visitAt),
+    items: [visitItem],
+  };
+}
+
+function buildAnniversarySummary(space, anniversaries, today = formatDate()) {
+  const candidates = [];
+  if (space && space.startDate) {
+    candidates.push({
+      title: '在一起纪念日',
+      date: getNextAnnualDate(space.startDate, today),
+    });
+  }
+  anniversaries.forEach((item) => {
+    if (item.date) {
+      candidates.push({
+        title: item.name || '纪念日',
+        date: getNextAnnualDate(item.date, today),
+      });
+    }
+  });
+
+  if (!candidates.length) {
+    return {
+      title: '还没有设置纪念日',
+      desc: '去纪念日页设一个重要的日子吧。',
+      daysLeft: 0,
+    };
+  }
+
+  const nextItem = candidates
+    .map((item) => ({
+      ...item,
+      daysLeft: getDaysLeftFromToday(item.date, today),
+    }))
+    .sort((left, right) => left.daysLeft - right.daysLeft)[0];
+
+  if (nextItem.daysLeft > 30) {
+    return {
+      title: `下一次重要节点是${nextItem.title}`,
+      desc: `还有 ${nextItem.daysLeft} 天，进入 30 天内会开始提醒你。`,
+      daysLeft: nextItem.daysLeft,
+      name: nextItem.title,
+      reminderActive: false,
+    };
+  }
+
+  return {
+    title: nextItem.daysLeft === 0 ? `今天就是${nextItem.title}` : `还有 ${nextItem.daysLeft} 天到${nextItem.title}`,
+    desc: nextItem.daysLeft === 0 ? '别忘了给今天留一条正式的纪念。' : `已经进入提醒期，记得提前准备 ${nextItem.title}。`,
+    daysLeft: nextItem.daysLeft,
+    name: nextItem.title,
+    reminderActive: true,
+  };
+}
+
+function buildLatestPartnerActivity(activityFeed = [], partnerUser) {
+  const partnerUserId = partnerUser ? partnerUser._id : '';
+  const partnerFeed = (Array.isArray(activityFeed) ? activityFeed : [])
+    .map(normalizeActivityItem)
+    .filter((item) => item.userId === partnerUserId && item.type !== 'visit')
+    .sort((left, right) => Number(right.createdAt) - Number(left.createdAt))
+    .slice(0, 4);
+
+  if (!partnerFeed.length) {
+    return {
+      title: '今天还没有新的互动',
+      desc: '可以先写一条记录，或者去时光墙看看对方。',
+      createdAt: 0,
+      type: 'empty',
+      items: [],
+    };
+  }
+
+  const latestItem = partnerFeed[0];
+  const relativeDay = getRelativeDayLabel(latestItem.createdAt);
+  if (relativeDay === '昨天') {
+    const yesterdayTitleMap = {
+      visit: '对方昨天进入过小程序',
+      like: '对方昨天点过赞',
+      comment: '对方昨天写过评论',
+      moment: '对方昨天写过记录',
+    };
+
+    return {
+      ...latestItem,
+      title: yesterdayTitleMap[latestItem.type] || '对方昨天有过动态',
+      desc: `昨天 ${latestItem.timeText}，${latestItem.desc}`,
+      items: partnerFeed,
+    };
+  }
+
+  if (relativeDay && relativeDay !== '今天') {
+    return {
+      ...latestItem,
+      title: `对方最近一次动态在${relativeDay}`,
+      desc: `${relativeDay} ${latestItem.timeText}，${latestItem.desc}`,
+      items: partnerFeed,
+    };
+  }
+
+  return {
+    ...latestItem,
+    items: partnerFeed,
+  };
+}
+
+async function getActivityFeed() {
+  const space = await getSpace();
+  return {
+    activityFeed: (space.activityFeed || []).map(normalizeActivityItem).filter((item) => item.type !== 'visit'),
+  };
 }
 
 async function getNotificationsForUser(user, limit = 10) {
@@ -587,11 +911,22 @@ async function removeAllDocuments(collectionName) {
 async function getHomeData() {
   const space = await getSpace();
   const user = await ensureAuthorizedUser();
+  const partnerUser = await getPartnerUser(user);
   const moments = await safeList(MOMENTS_COLLECTION, { orderField: 'createdAt', orderDirection: 'desc', limit: 100 });
+  const anniversaries = await safeList(ANNIVERSARIES_COLLECTION, { orderField: 'date', orderDirection: 'asc', limit: 50 });
   const notifications = await getNotificationsForUser(user, 10);
   const unreadNotificationCount = notifications.filter((item) => !item.isRead).length;
+
+  const homeSnapshot = {
+    partnerVisit: buildPartnerVisitSummary(partnerUser, formatDate()),
+    dailyTip: getDailyTip(space, formatDate()),
+    anniversary: buildAnniversarySummary(space, anniversaries, formatDate()),
+    latestActivity: buildLatestPartnerActivity(space.activityFeed, partnerUser),
+  };
+
   return {
     space,
+    homeSnapshot,
     notifications,
     unreadNotificationCount,
     momentNotification: normalizeMomentNotificationSubscription(user.subscriptions && user.subscriptions.momentCreated),
@@ -622,6 +957,19 @@ async function createMoment(data, user) {
     _id: createResult._id,
   };
   const notification = await createMomentNotification(createdMoment, user, data.notificationConfig || {});
+  await appendActivityItem({
+    type: 'moment',
+    badge: '写了记录',
+    title: `${getSenderDisplayName(user)}发布了一条记录`,
+    desc: `《${createdMoment.title || '今天的记录'}》已经放进回忆里了。`,
+    userId: user._id,
+    userRole: user.role,
+    userNickname: getSenderDisplayName(user),
+    momentId: createdMoment._id,
+    route: 'pages/release/index',
+    routeLabel: getRouteLabel('pages/release/index'),
+    createdAt: createdMoment.createdAt,
+  });
   return {
     moment: await prepareMomentForClient(createdMoment, user),
     notification,
@@ -747,19 +1095,57 @@ async function getSpaceData() {
   };
 }
 
+async function saveDailyTipsText(text = '') {
+  const dailyTipsText = normalizeDailyTipsText(text);
+  const space = await saveSpacePatch({ dailyTipsText });
+  return {
+    dailyTipsText: space.dailyTipsText,
+    dailyTip: getDailyTip(space, formatDate()),
+  };
+}
+
 async function toggleMomentLike(id, user) {
   const momentDoc = await db.collection(MOMENTS_COLLECTION).doc(id).get();
   const current = normalizeMomentRecord(momentDoc.data, user);
   const likeUserIds = current.likeUserIds || [];
+  const likeActivities = Array.isArray(current.likeActivities) ? current.likeActivities : [];
   const likedByMe = likeUserIds.includes(user._id);
   const nextLikeUserIds = likedByMe ? likeUserIds.filter((item) => item !== user._id) : likeUserIds.concat(user._id);
+  const nextLikeActivities = likedByMe
+    ? likeActivities.filter((item) => item.userId !== user._id)
+    : likeActivities
+      .filter((item) => item.userId !== user._id)
+      .concat([{
+        id: createId('like'),
+        userId: user._id,
+        userRole: user.role,
+        userNickname: user.nickname || (user.role === 'owner' ? '我' : '你'),
+        createdAt: Date.now(),
+      }]);
 
   await db.collection(MOMENTS_COLLECTION).doc(id).update({
     data: {
       likeUserIds: nextLikeUserIds,
+      likeActivities: nextLikeActivities,
       updatedAt: Date.now(),
     },
   });
+
+  if (!likedByMe) {
+    await appendActivityItem({
+      type: 'like',
+      badge: '点了喜欢',
+      title: `${getSenderDisplayName(user)}点了一个喜欢`,
+      desc: `给《${current.title || '今天的记录'}》留了一个喜欢。`,
+      userId: user._id,
+      userRole: user.role,
+      userNickname: getSenderDisplayName(user),
+      momentId: id,
+      route: 'pages/moment/detail',
+      routeLabel: getRouteLabel('pages/moment/detail'),
+      createdAt: Date.now(),
+    });
+  }
 
   return {
     liked: !likedByMe,
@@ -790,6 +1176,20 @@ async function addMomentComment(id, content, user) {
       comments: comments.map(({ canDelete, creatorLabel, ...rest }) => rest),
       updatedAt: Date.now(),
     },
+  });
+
+  await appendActivityItem({
+    type: 'comment',
+    badge: '写了评论',
+    title: `${getSenderDisplayName(user)}写了一条评论`,
+    desc: `在《${current.title || '今天的记录'}》里留了一句：${text}`.slice(0, 52),
+    userId: user._id,
+    userRole: user.role,
+    userNickname: getSenderDisplayName(user),
+    momentId: id,
+    route: 'pages/moment/detail',
+    routeLabel: getRouteLabel('pages/moment/detail'),
+    createdAt: comment.createdAt,
   });
 
   return {
@@ -965,6 +1365,10 @@ exports.main = async (event) => {
   switch (action) {
     case 'getHomeData':
       return getHomeData();
+    case 'getActivityFeed':
+      return getActivityFeed();
+    case 'trackMiniProgramVisit':
+      return trackMiniProgramVisit(data.path, user);
     case 'setStartDate':
       return saveSpacePatch({ startDate: data.startDate || '' });
     case 'createMoment':
@@ -1054,6 +1458,8 @@ exports.main = async (event) => {
       return changePetSkin(data.petId);
     case 'saveReminderSettings':
       return saveReminderSettings(data);
+    case 'saveDailyTipsText':
+      return saveDailyTipsText(data.dailyTipsText);
     case 'getDiaryData':
       return getDiaryData(data.month);
     case 'saveSpace':
@@ -1062,6 +1468,7 @@ exports.main = async (event) => {
         partnerA: data.partnerA,
         partnerB: data.partnerB,
         intro: data.intro,
+        dailyTipsText: data.dailyTipsText,
       });
     case 'clearAllData': {
       const removedMoments = await removeAllDocuments(MOMENTS_COLLECTION);

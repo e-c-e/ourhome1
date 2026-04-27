@@ -62,95 +62,74 @@
 
   <warm-empty-state wx:elif="{{errorMessage}}" customClass="home-empty home-empty--soft" title="💭 加载失败" desc="{{errorMessage}}"></warm-empty-state>
 
-  <block wx:elif="{{recentMoments.length}}">
-    <view class="section-panel section-panel--memory-list">
-      <view class="section-head">
-        <text class="section-head__title">🌸 最近回忆</text>
-        <text class="section-head__sub">轻轻翻看</text>
-      </view>
-
-      <swiper
-        class="memory-carousel"
-        current="{{memoryFocusIndex}}"
-        previous-margin="72rpx"
-        next-margin="72rpx"
-        circular="{{recentMoments.length > 1}}"
-        duration="560"
-        easing-function="easeInOutCubic"
-        skip-hidden-item-layout="{{true}}"
-        bindchange="handleMemorySwiperChange"
-      >
-        <block wx:for="{{recentMoments}}" wx:key="id">
-          <swiper-item>
-            <view class="memory-carousel__item {{index === memoryFocusIndex ? 'memory-carousel__item--active' : 'memory-carousel__item--side'}}">
-              <view class="memory-card {{!item.coverImage ? 'memory-card--text-only' : ''}}" data-id="{{item.id}}" bindtap="goMomentDetail">
-                <view wx:if="{{item.coverImage}}" class="memory-card__media-wrap">
-                  <image class="memory-card__media" src="{{item.coverImage}}" mode="aspectFill" lazy-load="{{true}}" />
-                </view>
-                <view wx:else class="memory-card__placeholder">
-                  <text class="memory-card__placeholder-icon">💌</text>
-                  <text class="memory-card__placeholder-title">这是一条文字回忆</text>
-                </view>
-
-                <view class="memory-card__body">
-                  <view class="memory-card__meta">
-                    <text class="memory-card__date">{{item.date}}</text>
-                    <text class="memory-card__mood">💗 {{item.mood}}</text>
-                  </view>
-                  <view class="memory-card__title">{{item.title}}</view>
-                  <view class="memory-card__summary">{{item.summary}}</view>
-                  <view wx:if="{{item.locationText}}" class="memory-card__footer">
-                    <text class="memory-card__location">📍 {{item.locationText}}</text>
-                  </view>
-                </view>
-              </view>
-            </view>
-          </swiper-item>
-        </block>
-      </swiper>
-    </view>
-
-    <view class="notice-panel">
-      <view class="notice-panel__head">
-        <view>
-          <view class="notice-panel__title">🔔 提醒中心</view>
-          <view class="notice-panel__desc">记录今天和记录这一天保存成功后，会从同一个云端入口触发提醒。</view>
-        </view>
-        <view wx:if="{{unreadNotificationCount}}" class="notice-panel__count">{{unreadNotificationCount}}</view>
-      </view>
-
-      <view class="notice-panel__subscribe">
-        <view>
-          <view class="notice-panel__subscribe-title">微信提醒</view>
-          <view class="notice-panel__subscribe-desc">{{momentNotificationText}}</view>
-        </view>
-        <view class="notice-panel__subscribe-action" bindtap="enableMomentNotification">
-          {{momentNotification.enabled ? '重新授权' : '开启提醒'}}
-        </view>
-      </view>
-
-      <view wx:if="{{notifications.length}}" class="notice-list">
-        <view wx:for="{{notifications}}" wx:key="id" class="notice-item {{!item.isRead ? 'notice-item--unread' : ''}}" data-id="{{item.id}}" data-moment-id="{{item.momentId}}" data-is-read="{{item.isRead}}" bindtap="handleNotificationTap">
-          <view class="notice-item__main">
-            <view class="notice-item__title-row">
-              <text class="notice-item__title">{{item.title}}</text>
-              <text class="notice-item__time">{{item.createdAtText}}</text>
-            </view>
-            <view class="notice-item__content">{{item.content}}</view>
-          </view>
-        </view>
-        <view wx:if="{{unreadNotificationCount}}" class="notice-panel__footer">
-          <view class="notice-panel__mark" bindtap="markAllNotificationsRead">全部标记已读</view>
-        </view>
-      </view>
-      <view wx:else class="notice-panel__empty">对方发布新记录后，站内提醒会先显示在这里。</view>
-    </view>
-
-    <view class="warm-page-end"></view>
-  </block>
-
   <block wx:else>
-    <warm-empty-state customClass="home-empty" title="💕 还没有记录" desc="点下方按钮，写下第一条属于你们的回忆。"></warm-empty-state>
+    <view class="section-panel status-panel">
+      <view class="section-head section-head--single">
+        <text class="section-head__title">🌷 今日状态</text>
+        <text class="section-head__sub">今天适合做什么</text>
+      </view>
+
+      <view class="status-grid">
+        <view class="status-card status-card--visit">
+          <view class="status-card__head">
+            <view class="status-card__icon">👣</view>
+            <view class="status-card__label">今天谁何时来过</view>
+          </view>
+          <view class="status-card__title">{{homeSnapshot.partnerVisit.title}}</view>
+          <view class="status-card__desc">{{homeSnapshot.partnerVisit.desc}}</view>
+          <view wx:if="{{homeSnapshot.partnerVisit.items.length}}" class="visit-list">
+            <view wx:for="{{homeSnapshot.partnerVisit.items}}" wx:key="id" class="visit-item">
+              <text class="visit-item__badge">{{item.dayLabel}}</text>
+              <text class="visit-item__text">{{item.timeText}} · {{item.routeLabel}}</text>
+            </view>
+          </view>
+        </view>
+
+        <view class="status-card status-card--tip" bindtap="goTipsPage">
+          <view class="status-card__head">
+            <view class="status-card__icon">🥤</view>
+            <view class="status-card__label">今天的小提示</view>
+          </view>
+          <view class="status-card__title">把今天过得舒服一点</view>
+          <view class="status-card__desc">{{homeSnapshot.dailyTip}}</view>
+          <view wx:if="{{!tipEditorVisible}}" class="status-card__action" catchtap="openTipEditor">直接在首页编辑</view>
+          <view wx:if="{{tipEditorVisible}}" class="tip-editor" catchtap="noop">
+            <textarea class="tip-editor__textarea" maxlength="240" placeholder="一行写一条提示，留空则使用系统默认提示" value="{{dailyTipDraft}}" bindinput="handleTipDraftInput"></textarea>
+            <view class="tip-editor__note">一行一条，首页会按日期轮换显示。</view>
+            <view class="tip-editor__actions">
+              <view class="tip-editor__button tip-editor__button--ghost" catchtap="cancelTipEditor">取消</view>
+              <view class="tip-editor__button" catchtap="saveHomeTips">{{tipSaving ? '保存中...' : '保存提示'}}</view>
+            </view>
+          </view>
+        </view>
+
+        <view class="status-card status-card--anniversary">
+          <view class="status-card__head">
+            <view class="status-card__icon">📅</view>
+            <view class="status-card__label">纪念日倒数</view>
+          </view>
+          <view class="status-card__title">{{homeSnapshot.anniversary.title}}</view>
+          <view class="status-card__desc">{{homeSnapshot.anniversary.desc}}</view>
+        </view>
+
+        <view class="status-card status-card--activity">
+          <view class="status-card__head">
+            <view class="status-card__icon">💌</view>
+            <view class="status-card__label">对方最近动态</view>
+          </view>
+          <view class="status-card__title">{{homeSnapshot.latestActivity.title}}</view>
+          <view class="status-card__desc">{{homeSnapshot.latestActivity.desc}}</view>
+          <view wx:if="{{homeSnapshot.latestActivity.items.length}}" class="activity-list">
+            <view wx:for="{{homeSnapshot.latestActivity.items}}" wx:key="id" class="activity-item">
+              <text class="activity-item__badge">{{item.badge}}</text>
+              <text class="activity-item__text">{{item.timeText}} · {{item.title}}</text>
+            </view>
+          </view>
+          <view class="status-card__action" bindtap="goActivityFeed">查看完整动态</view>
+        </view>
+      </view>
+    </view>
+
     <view class="notice-panel">
       <view class="notice-panel__head">
         <view>
@@ -186,9 +165,9 @@
       </view>
       <view wx:else class="notice-panel__empty">对方发布新记录后，站内提醒会先显示在这里。</view>
     </view>
+
     <view class="warm-page-end"></view>
   </block>
-
 
   </view>
 </view>

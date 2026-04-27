@@ -1,0 +1,7 @@
+{
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "warm-navbar": "/components/warm-navbar",
+    "warm-empty-state": "/components/warm-empty-state"
+  }
+}

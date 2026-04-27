@@ -1,5 +1,11 @@
 import { addAnniversary, fetchMemorialData, removeAnniversary, saveReminderSettings, updateRelationshipStartDate } from '../../api/relationship';
-import { formatDate, getDateDistance, getDaysBetween } from '../../utils/couple';
+import {
+  formatDate,
+  getDateDistance,
+  getDaysBetween,
+  markDirtyFlags,
+  STORAGE_KEYS,
+} from '../../utils/couple';
 import { ensureAuthorizedPage } from '../../utils/pageAuth';
 
 const ONE_DAY = 1000 * 60 * 60 * 24;
@@ -223,6 +229,7 @@ Page({
           reminderSettings: this.data.reminderSettings,
         }, this.data),
       });
+      markDirtyFlags(STORAGE_KEYS.HOME_DIRTY);
 
       wx.showToast({
         title: '在一起日期已更新',
@@ -290,6 +297,7 @@ Page({
         reminderSettings: this.data.reminderSettings,
       }, this.data),
     });
+    markDirtyFlags(STORAGE_KEYS.HOME_DIRTY);
     wx.showToast({
       title: '纪念日已添加',
       icon: 'success',
@@ -305,6 +313,7 @@ Page({
       anniversaries: this.data.rawAnniversaries.filter((item) => item.id !== id),
       reminderSettings: this.data.reminderSettings,
     }, this.data));
+    markDirtyFlags(STORAGE_KEYS.HOME_DIRTY);
   },
 
   async toggleReminderEnabled() {

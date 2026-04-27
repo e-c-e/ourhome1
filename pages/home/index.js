@@ -1,10 +1,10 @@
-import { fetchHomeData, markNotificationsRead, saveMomentNotificationSubscription, updateRelationshipStartDate } from '../../api/relationship';
+import { fetchHomeData, markNotificationsRead, saveDailyTipsText, saveMomentNotificationSubscription, updateRelationshipStartDate } from '../../api/relationship';
 import { getMomentNotificationConfig } from '../../config/notification';
 import { STORAGE_KEYS, consumeDirtyFlag, formatDate, getDaysBetween } from '../../utils/couple';
 import { ensureAuthorizedPage } from '../../utils/pageAuth';
 
 function shouldLoadHomePage(page) {
-  return page.data.loading || !page.data.moments.length || consumeDirtyFlag(STORAGE_KEYS.HOME_DIRTY);
+  return page.data.loading || !page.data.homeReady || consumeDirtyFlag(STORAGE_KEYS.HOME_DIRTY);
 }
 
 function getMomentNotificationText(notification = {}) {
@@ -21,6 +21,7 @@ function isUnknownCloudActionError(error) {
 
 Page({
   data: {
+    homeReady: false,
     today: formatDate(new Date()),
     relationshipStartDate: '',
     relationshipDateLabel: '还没有设置在一起日期',
@@ -32,7 +33,22 @@ Page({
     latestText: '还没有新的回忆',
     latestDate: '',
     moments: [],
-    recentMoments: [],
+    homeSnapshot: {
+      partnerVisit: {
+        title: '今天还没有等到对方来过',
+        desc: '等对方打开首页后，这里会显示今天来过的时间。',
+      },
+      dailyTip: '今天记得多喝水，也记得多说一句想你。',
+      anniversary: {
+        title: '还没有设置纪念日',
+        desc: '去纪念日页设一个重要的日子吧。',
+      },
+      latestActivity: {
+        title: '今天还没有新的互动',
+        desc: '可以先写一条记录，或者去时光墙看看对方。',
+        items: [],
+      },
+    },
     notifications: [],
     unreadNotificationCount: 0,
     momentNotification: {
@@ -41,8 +57,11 @@ Page({
       status: 'unknown',
     },
     momentNotificationText: getMomentNotificationText(),
-    memoryFocusIndex: 0,
     petIslandHint: '宠物岛功能暂未开启，先把今天的回忆好好存起来。',
+    dailyTipsText: '',
+    dailyTipDraft: '',
+    tipEditorVisible: false,
+    tipSaving: false,
     notificationSaving: false,
     loading: true,
     errorMessage: '',
@@ -67,24 +86,10 @@ Page({
     }
 
     try {
-      const { moments = [], notifications = [], unreadNotificationCount = 0, momentNotification = {}, space = {} } = await fetchHomeData();
+      const { moments = [], homeSnapshot = {}, notifications = [], unreadNotificationCount = 0, momentNotification = {}, space = {} } = await fetchHomeData();
       const startDate = space.startDate || '';
       const today = formatDate(new Date());
       const sortedMoments = [...moments].sort((left, right) => (right.createdAt || 0) - (left.createdAt || 0));
-
-      const recentMoments = sortedMoments.slice(0, 3).map((item) => ({
-        id: item._id,
-        cover: item.cover || '',
-        coverImage: item.cover || (item.images && item.images.length ? item.images[0] : ''),
-        title: item.title || '今天的记录',
-        content: item.content || '写下了一段新的回忆。',
-        summary: (item.content || '写下了一段新的回忆。').slice(0, 42),
-        images: item.images || [],
-        date: item.date || this.data.today,
-        mood: item.mood || '日常',
-        previewImages: (item.images || []).slice(0, 3),
-        locationText: item.location && item.location.name ? item.location.name : '',
-      }));
 
       const latestMoment = sortedMoments[0];
       const petIslandHint = sortedMoments.length
@@ -102,17 +107,23 @@ Page({
         latestText: latestMoment ? latestMoment.content.slice(0, 24) : '还没有新的回忆',
         latestDate: latestMoment ? latestMoment.date : '',
         moments: sortedMoments,
-        recentMoments,
+        homeSnapshot: {
+          ...this.data.homeSnapshot,
+          ...homeSnapshot,
+        },
         notifications,
         unreadNotificationCount,
         momentNotification,
         momentNotificationText: getMomentNotificationText(momentNotification),
-        memoryFocusIndex: 0,
         petIslandHint,
+        dailyTipsText: space.dailyTipsText || '',
+        dailyTipDraft: space.dailyTipsText || '',
+        homeReady: true,
         loading: false,
       });
     } catch (error) {
       this.setData({
+        homeReady: true,
         loading: false,
         errorMessage: error.message || '回忆加载失败，请稍后再试。',
       });
@@ -136,10 +147,70 @@ Page({
     });
   },
 
-  handleMemorySwiperChange(e) {
-    this.setData({
-      memoryFocusIndex: e.detail.current || 0,
+  goMy() {
+    wx.switchTab({
+      url: '/pages/my/index',
     });
+  },
+
+  goActivityFeed() {
+    wx.navigateTo({
+      url: '/pages/activity/index',
+    });
+  },
+
+  goTipsPage() {
+    wx.navigateTo({
+      url: '/pages/tips/index',
+    });
+  },
+
+  openTipEditor() {
+    this.setData({
+      tipEditorVisible: true,
+      dailyTipDraft: this.data.dailyTipsText || '',
+    });
+  },
+
+  cancelTipEditor() {
+    this.setData({
+      tipEditorVisible: false,
+      dailyTipDraft: this.data.dailyTipsText || '',
+    });
+  },
+
+  handleTipDraftInput(e) {
+    this.setData({
+      dailyTipDraft: e.detail.value || '',
+    });
+  },
+
+  async saveHomeTips() {
+    if (this.data.tipSaving) return;
+    this.setData({ tipSaving: true });
+    try {
+      const result = await saveDailyTipsText(this.data.dailyTipDraft);
+      this.setData({
+        tipSaving: false,
+        tipEditorVisible: false,
+        dailyTipsText: result.dailyTipsText || '',
+        dailyTipDraft: result.dailyTipsText || '',
+        homeSnapshot: {
+          ...this.data.homeSnapshot,
+          dailyTip: result.dailyTip || this.data.homeSnapshot.dailyTip,
+        },
+      });
+      wx.showToast({
+        title: '首页提示已保存',
+        icon: 'success',
+      });
+    } catch (error) {
+      this.setData({ tipSaving: false });
+      wx.showToast({
+        title: error.message || '保存失败，请稍后重试',
+        icon: 'none',
+      });
+    }
   },
 
   goMomentDetail(e) {

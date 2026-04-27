@@ -203,6 +203,9 @@ exports.main = async () => {
       avatarUrl: '',
       role,
       subscriptions: {},
+      lastMiniProgramVisitAt: 0,
+      lastMiniProgramVisitDate: '',
+      lastMiniProgramPath: '',
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };

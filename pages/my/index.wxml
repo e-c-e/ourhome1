@@ -31,11 +31,16 @@
 
   <view class="panel">
     <view class="panel__title">🌷 空间设置</view>
-    <view class="panel__desc">可以在这里调整空间名字、双方昵称和介绍，让这个小程序更像你们自己。</view>
+    <view class="panel__desc">可以在这里调整空间名字、双方昵称、介绍和首页的小提示，让这个小程序更像你们自己。</view>
     <warm-input customClass="field-input" value="{{profile.spaceName}}" field="spaceName" maxlength="20" placeholder="空间名字" bind:input="handleInput"></warm-input>
     <warm-input customClass="field-input" value="{{profile.partnerA}}" field="partnerA" maxlength="10" placeholder="你的名字" bind:input="handleInput"></warm-input>
     <warm-input customClass="field-input" value="{{profile.partnerB}}" field="partnerB" maxlength="10" placeholder="对方名字" bind:input="handleInput"></warm-input>
     <warm-input textarea="{{true}}" customClass="field-textarea" field="intro" value="{{profile.intro}}" maxlength="80" minHeight="180rpx" placeholder="写一句只属于你们的介绍" bind:input="handleInput"></warm-input>
+    <view class="tips-panel">
+      <view class="tips-panel__title">🥤 首页今日小提示</view>
+      <view class="tips-panel__desc">一行写一条提示，首页会按日期轮换显示；留空时继续使用系统默认提示。</view>
+    </view>
+    <warm-input textarea="{{true}}" customClass="field-textarea field-textarea--tips" field="dailyTipsText" value="{{profile.dailyTipsText}}" maxlength="240" minHeight="220rpx" placeholder="例如：\n多喝水\n忙完记得抱一抱对方\n今天也要早点休息" bind:input="handleInput"></warm-input>
     <warm-button theme="primary" size="large" bind:action="saveProfile">❤️ 保存空间信息</warm-button>
   </view>
 

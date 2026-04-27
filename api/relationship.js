@@ -9,6 +9,24 @@ export function fetchHomeData() {
   return callCloudFunction('relationship', { action: 'getHomeData' });
 }
 
+export function fetchActivityFeed() {
+  return callCloudFunction('relationship', { action: 'getActivityFeed' });
+}
+
+export function trackMiniProgramVisit(path) {
+  return callCloudFunction('relationship', {
+    action: 'trackMiniProgramVisit',
+    data: { path },
+  });
+}
+
+export function saveDailyTipsText(dailyTipsText) {
+  return callCloudFunction('relationship', {
+    action: 'saveDailyTipsText',
+    data: { dailyTipsText },
+  });
+}
+
 export function fetchMomentDetail(id) {
   return callCloudFunction('relationship', {
     action: 'getMomentDetail',
